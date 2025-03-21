@@ -7,26 +7,26 @@ import Layout from "@/components/Layout";
 const About = () => {
   const team = [
     {
-      name: "Sarah Johnson",
-      role: "CEO & Founder",
+      name: "Jyothika Lal",
+      role: "Owner",
       image: "https://placehold.co/300x300/f8fafc/94a3b8?text=SJ",
       bio: "Former fintech executive with 15+ years of experience in financial technology and freelancer ecosystems."
     },
     {
-      name: "Michael Chen",
-      role: "CTO",
+      name: "Jeevesh Mishra",
+      role: "Scrum Master",
       image: "https://placehold.co/300x300/f8fafc/94a3b8?text=MC",
       bio: "Technology leader with expertise in building secure financial platforms and scalable cloud architecture."
     },
     {
-      name: "Emma Roberts",
-      role: "Head of Design",
+      name: "Jenil Sadhwani",
+      role: "Founder and Developer",
       image: "https://placehold.co/300x300/f8fafc/94a3b8?text=ER",
-      bio: "Award-winning designer focused on creating beautiful, intuitive experiences for financial applications."
+      bio: "Award-winning designer, developer focused on creating beautiful, intuitive experiences for financial applications."
     },
     {
-      name: "James Wilson",
-      role: "Financial Advisor",
+      name: "Dr.Antoni Sophia",
+      role: "Guide",
       image: "https://placehold.co/300x300/f8fafc/94a3b8?text=JW",
       bio: "Certified financial planner with deep knowledge of freelancer tax strategies and financial planning."
     }
@@ -87,7 +87,7 @@ const About = () => {
                   <div className="w-16 h-1 bg-primary rounded-full mb-6"></div>
                 </div>
                 <p className="text-muted-foreground">
-                  FinancePro began in 2018 when our founder, Sarah Johnson, experienced firsthand the financial challenges of freelancing. After struggling with inconsistent income, complex tax situations, and financial planning uncertainty, she decided to build the solution she wished had existed.
+                  FinancePro began in 2018 when our founder, Jenil Sadhwani, experienced firsthand the financial challenges of freelancing. After struggling with inconsistent income, complex tax situations, and financial planning uncertainty, she decided to build the solution she wished had existed.
                 </p>
                 <p className="text-muted-foreground">
                   What started as a simple budgeting tool has evolved into a comprehensive financial platform designed specifically for freelancers and independent professionals. We've grown from a team of three to a passionate company of 25, all dedicated to simplifying financial management for the self-employed.
@@ -172,7 +172,7 @@ const About = () => {
                     <Mail className="h-5 w-5 text-primary mt-0.5 mr-3" />
                     <div>
                       <h3 className="font-medium">Email</h3>
-                      <p className="text-muted-foreground">hello@financepro.example.com</p>
+                      <p className="text-muted-foreground">jenil.sadhwani04@gmail.com</p>
                     </div>
                   </div>
                   
@@ -180,7 +180,7 @@ const About = () => {
                     <Phone className="h-5 w-5 text-primary mt-0.5 mr-3" />
                     <div>
                       <h3 className="font-medium">Phone</h3>
-                      <p className="text-muted-foreground">(123) 456-7890</p>
+                      <p className="text-muted-foreground">(91)-9377566687</p>
                     </div>
                   </div>
                   
@@ -189,8 +189,8 @@ const About = () => {
                     <div>
                       <h3 className="font-medium">Office</h3>
                       <p className="text-muted-foreground">
-                        123 Financial Street<br />
-                        San Francisco, CA 94107
+                        3165 Estancia Potheri<br />
+                        Chennai, Tamil Nadu 603203
                       </p>
                     </div>
                   </div>
