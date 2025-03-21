@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import Layout from "@/components/Layout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Plus, Trash2, Edit, CreditCard, Smartphone, Bank, Wallet, Check } from "lucide-react";
+import { Plus, Trash2, Edit, CreditCard, Smartphone, Building, Wallet, Check } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import {
   Dialog,
@@ -283,7 +283,7 @@ const PaymentMethods = () => {
       case 'card':
         return <CreditCard className="h-6 w-6" />;
       case 'bank':
-        return <Bank className="h-6 w-6" />;
+        return <Building className="h-6 w-6" />; // Changed from Bank to Building
       case 'upi':
         return <Smartphone className="h-6 w-6" />;
       default:

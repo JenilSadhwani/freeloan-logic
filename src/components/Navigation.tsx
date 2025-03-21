@@ -15,6 +15,13 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
 
+// Define types for navigation items
+interface NavItem {
+  label: string;
+  path: string;
+  icon?: React.ReactNode;
+}
+
 const Navigation = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -57,7 +64,7 @@ const Navigation = () => {
   };
 
   // Nav items when logged in
-  const authenticatedNavItems = [
+  const authenticatedNavItems: NavItem[] = [
     { label: "Dashboard", path: "/dashboard", icon: <PieChart className="w-4 h-4" /> },
     { label: "Transactions", path: "/transactions", icon: <History className="w-4 h-4" /> },
     { label: "Reports", path: "/reports", icon: <BarChart3 className="w-4 h-4" /> },
@@ -66,7 +73,7 @@ const Navigation = () => {
   ];
 
   // Nav items for landing page (when not logged in)
-  const landingNavItems = [
+  const landingNavItems: NavItem[] = [
     { label: "Features", path: "/#features" },
     { label: "Pricing", path: "/#pricing" },
     { label: "About", path: "/about" },

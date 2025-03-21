@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -11,7 +10,6 @@ import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 
-// Define types
 interface Transaction {
   id: string;
   amount: number;
@@ -50,7 +48,6 @@ const Reports = () => {
   const [timeframe, setTimeframe] = useState("month");
   const [currentBalance, setCurrentBalance] = useState(0);
 
-  // Computed values
   const totalIncome = transactions.filter(t => t.type === "income").reduce((sum, t) => sum + Number(t.amount), 0);
   const totalExpenses = transactions.filter(t => t.type === "expense").reduce((sum, t) => sum + Number(t.amount), 0);
   const netFlow = totalIncome - totalExpenses;
@@ -65,7 +62,6 @@ const Reports = () => {
           .select('*')
           .eq('user_id', user.id);
         
-        // Apply timeframe filter
         const now = new Date();
         if (timeframe === "month") {
           const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
@@ -128,7 +124,6 @@ const Reports = () => {
     fetchProfile();
   }, [user, timeframe]);
 
-  // Prepare data for charts
   const prepareExpensesChartData = (): CategorySummary[] => {
     const expensesByCategory: Record<string, number> = {};
     
@@ -175,7 +170,6 @@ const Reports = () => {
     const months: Record<string, MonthData> = {};
     const now = new Date();
     
-    // Initialize last 6 months
     for (let i = 5; i >= 0; i--) {
       const month = new Date(now.getFullYear(), now.getMonth() - i, 1);
       const monthKey = format(month, 'MMM yy');
@@ -186,7 +180,6 @@ const Reports = () => {
       };
     }
     
-    // Add transaction data
     transactions.forEach(transaction => {
       const date = new Date(transaction.date);
       const monthKey = format(date, 'MMM yy');
@@ -208,6 +201,13 @@ const Reports = () => {
   const monthlyData = prepareMonthlyData();
 
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d', '#ffc658', '#8dd1e1'];
+
+  const formatTooltipValue = (value: any) => {
+    if (typeof value === 'number') {
+      return [`$${value.toFixed(2)}`, undefined];
+    }
+    return [`$${value}`, undefined];
+  };
 
   return (
     <Layout>
@@ -302,7 +302,7 @@ const Reports = () => {
                         <CartesianGrid strokeDasharray="3 3" />
                         <XAxis dataKey="name" />
                         <YAxis />
-                        <Tooltip formatter={(value) => [`$${value}`, undefined]} />
+                        <Tooltip formatter={(value) => formatTooltipValue(value)} />
                         <Legend />
                         <Bar dataKey="income" name="Income" fill="#4ade80" />
                         <Bar dataKey="expenses" name="Expenses" fill="#f87171" />
@@ -378,7 +378,7 @@ const Reports = () => {
                                 <Cell key={`cell-${index}`} fill={entry.color || COLORS[index % COLORS.length]} />
                               ))}
                             </Pie>
-                            <Tooltip formatter={(value) => [`$${value.toFixed(2)}`, undefined]} />
+                            <Tooltip formatter={(value) => formatTooltipValue(value)} />
                           </PieChart>
                         </ResponsiveContainer>
                       </div>
@@ -436,7 +436,7 @@ const Reports = () => {
                                 <Cell key={`cell-${index}`} fill={entry.color || COLORS[index % COLORS.length]} />
                               ))}
                             </Pie>
-                            <Tooltip formatter={(value) => [`$${value.toFixed(2)}`, undefined]} />
+                            <Tooltip formatter={(value) => formatTooltipValue(value)} />
                           </PieChart>
                         </ResponsiveContainer>
                       </div>
