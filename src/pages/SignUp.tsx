@@ -1,103 +1,103 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Eye, EyeOff, Mail, Lock, User, AlertCircle, Check } from "lucide-react";
+import { Eye, EyeOff, Mail, Lock, User, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
 import Layout from "@/components/Layout";
+import { supabase } from "@/integrations/supabase/client";
 
 const SignUp = () => {
-  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const navigate = useNavigate();
-  
-  // Password strength indicators
-  const hasMinLength = password.length >= 8;
-  const hasUppercase = /[A-Z]/.test(password);
-  const hasNumber = /[0-9]/.test(password);
-  const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
-  
-  const passwordStrength = [
-    hasMinLength,
-    hasUppercase,
-    hasNumber,
-    hasSpecialChar
-  ].filter(Boolean).length;
-  
-  const getPasswordStrengthWidth = () => {
-    if (password.length === 0) return '0%';
-    return `${(passwordStrength / 4) * 100}%`;
-  };
-  
-  const getPasswordStrengthColor = () => {
-    if (passwordStrength <= 1) return 'bg-destructive';
-    if (passwordStrength <= 2) return 'bg-orange-500';
-    if (passwordStrength <= 3) return 'bg-yellow-500';
-    return 'bg-green-500';
-  };
+
+  useEffect(() => {
+    // Check if user is already logged in
+    const checkSession = async () => {
+      const { data } = await supabase.auth.getSession();
+      if (data.session) {
+        navigate("/dashboard");
+      }
+    };
+    
+    checkSession();
+  }, [navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     
-    if (!name || !email || !password) {
+    if (!email || !password || !firstName || !lastName) {
       setError("Please fill in all fields");
       return;
     }
     
-    if (passwordStrength < 3) {
-      setError("Please create a stronger password");
-      return;
-    }
-    
     setIsLoading(true);
     
     try {
-      // Mock signup - this is where you'd integrate your auth service
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            first_name: firstName,
+            last_name: lastName
+          }
+        }
+      });
       
-      // Success
-      toast.success("Account created successfully!");
-      navigate("/dashboard");
-    } catch (err) {
+      if (error) throw error;
+      
+      // Update the profile with the first name and last name
+      if (data.user) {
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .update({
+            first_name: firstName,
+            last_name: lastName
+          })
+          .eq('id', data.user.id);
+        
+        if (profileError) throw profileError;
+      }
+      
+      toast.success("Account created successfully");
+      navigate("/onboarding");
+    } catch (err: any) {
       console.error("Signup error:", err);
-      setError("Failed to create account. Please try again.");
+      setError(err.message || "Failed to create account");
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleGoogleSignup = async () => {
+  const handleGoogleSignUp = async () => {
     setIsLoading(true);
     try {
-      // Mock Google signup
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      toast.success("Google signup successful");
-      navigate("/dashboard");
-    } catch (err) {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`
+        }
+      });
+      
+      if (error) throw error;
+      
+      // No success message needed here as we'll be redirected
+    } catch (err: any) {
       console.error("Google signup error:", err);
-      setError("Failed to sign up with Google");
-    } finally {
+      setError(err.message || "Failed to sign up with Google");
       setIsLoading(false);
     }
   };
-
-  const PasswordRequirement = ({ met, text }: { met: boolean; text: string }) => (
-    <div className="flex items-center gap-2 text-sm">
-      <div className={`rounded-full p-0.5 ${met ? 'bg-green-500/20 text-green-600' : 'bg-muted text-muted-foreground'}`}>
-        {met ? <Check className="h-3 w-3" /> : <span className="block h-3 w-3" />}
-      </div>
-      <span className={met ? 'text-muted-foreground' : 'text-muted-foreground/70'}>
-        {text}
-      </span>
-    </div>
-  );
 
   return (
     <Layout>
@@ -107,7 +107,7 @@ const SignUp = () => {
             <div className="p-6 sm:p-8">
               <div className="text-center mb-6">
                 <h1 className="text-2xl font-bold tracking-tight mb-2">Create an account</h1>
-                <p className="text-muted-foreground">Get started with FinancePro</p>
+                <p className="text-muted-foreground">Start managing your finances today</p>
               </div>
               
               {error && (
@@ -118,22 +118,43 @@ const SignUp = () => {
               )}
               
               <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="space-y-2">
-                  <label htmlFor="name" className="text-sm font-medium">
-                    Full Name
-                  </label>
-                  <div className="relative">
-                    <User className="absolute left-3 top-2.5 h-5 w-5 text-muted-foreground" />
-                    <Input
-                      id="name"
-                      type="text"
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      placeholder="John Doe"
-                      className="pl-10"
-                      disabled={isLoading}
-                      required
-                    />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label htmlFor="firstName" className="text-sm font-medium">
+                      First Name
+                    </label>
+                    <div className="relative">
+                      <User className="absolute left-3 top-2.5 h-5 w-5 text-muted-foreground" />
+                      <Input
+                        id="firstName"
+                        type="text"
+                        value={firstName}
+                        onChange={(e) => setFirstName(e.target.value)}
+                        placeholder="John"
+                        className="pl-10"
+                        disabled={isLoading}
+                        required
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <label htmlFor="lastName" className="text-sm font-medium">
+                      Last Name
+                    </label>
+                    <div className="relative">
+                      <User className="absolute left-3 top-2.5 h-5 w-5 text-muted-foreground" />
+                      <Input
+                        id="lastName"
+                        type="text"
+                        value={lastName}
+                        onChange={(e) => setLastName(e.target.value)}
+                        placeholder="Doe"
+                        className="pl-10"
+                        disabled={isLoading}
+                        required
+                      />
+                    </div>
                   </div>
                 </div>
                 
@@ -185,41 +206,11 @@ const SignUp = () => {
                       )}
                     </button>
                   </div>
-                  
-                  {/* Password strength meter */}
-                  {password.length > 0 && (
-                    <div className="space-y-2 animate-fade-in mt-2">
-                      <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
-                        <div 
-                          className={`h-full rounded-full transition-all duration-300 ${getPasswordStrengthColor()}`}
-                          style={{ width: getPasswordStrengthWidth() }}
-                        />
-                      </div>
-                      <div className="grid grid-cols-2 gap-2 mt-2">
-                        <PasswordRequirement met={hasMinLength} text="At least 8 characters" />
-                        <PasswordRequirement met={hasUppercase} text="Uppercase letter" />
-                        <PasswordRequirement met={hasNumber} text="Number" />
-                        <PasswordRequirement met={hasSpecialChar} text="Special character" />
-                      </div>
-                    </div>
-                  )}
                 </div>
                 
                 <Button type="submit" className="w-full" disabled={isLoading}>
                   {isLoading ? "Creating account..." : "Create account"}
                 </Button>
-                
-                <p className="text-sm text-muted-foreground text-center">
-                  By signing up, you agree to our{" "}
-                  <a href="#" className="text-primary hover:underline">
-                    Terms of Service
-                  </a>{" "}
-                  and{" "}
-                  <a href="#" className="text-primary hover:underline">
-                    Privacy Policy
-                  </a>
-                  .
-                </p>
               </form>
               
               <div className="mt-6 flex items-center">
@@ -232,7 +223,7 @@ const SignUp = () => {
                 type="button"
                 variant="outline"
                 className="w-full mt-4"
-                onClick={handleGoogleSignup}
+                onClick={handleGoogleSignUp}
                 disabled={isLoading}
               >
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="w-5 h-5 mr-2">
@@ -253,7 +244,7 @@ const SignUp = () => {
                     d="M5.27698177,14.2678769 C5.03832634,13.556323 4.90909091,12.7937589 4.90909091,12 C4.90909091,11.2182781 5.03443647,10.4668121 5.26620003,9.76452941 L1.23999023,6.65002441 C0.43658717,8.26043162 0,10.0753848 0,12 C0,13.9195484 0.444780743,15.7301709 1.23746264,17.3349879 L5.27698177,14.2678769 Z"
                   />
                 </svg>
-                Google
+                Sign up with Google
               </Button>
             </div>
             

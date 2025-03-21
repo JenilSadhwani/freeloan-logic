@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Eye, EyeOff, Mail, Lock, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
 import Layout from "@/components/Layout";
+import { supabase } from "@/integrations/supabase/client";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -15,6 +16,18 @@ const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const navigate = useNavigate();
+
+  useEffect(() => {
+    // Check if user is already logged in
+    const checkSession = async () => {
+      const { data } = await supabase.auth.getSession();
+      if (data.session) {
+        navigate("/dashboard");
+      }
+    };
+    
+    checkSession();
+  }, [navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,15 +41,31 @@ const Login = () => {
     setIsLoading(true);
     
     try {
-      // Mock login for now - this is where you'd integrate your auth service
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      });
       
-      // Success
+      if (error) throw error;
+      
+      // Check if the user is onboarded
+      const { data: profileData } = await supabase
+        .from('profiles')
+        .select('is_onboarded')
+        .eq('id', data.user.id)
+        .single();
+      
       toast.success("Login successful");
-      navigate("/dashboard");
-    } catch (err) {
+      
+      // Redirect to onboarding if not onboarded, otherwise to dashboard
+      if (profileData && !profileData.is_onboarded) {
+        navigate("/onboarding");
+      } else {
+        navigate("/dashboard");
+      }
+    } catch (err: any) {
       console.error("Login error:", err);
-      setError("Invalid email or password");
+      setError(err.message || "Invalid email or password");
     } finally {
       setIsLoading(false);
     }
@@ -45,14 +74,19 @@ const Login = () => {
   const handleGoogleLogin = async () => {
     setIsLoading(true);
     try {
-      // Mock Google login
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      toast.success("Google login successful");
-      navigate("/dashboard");
-    } catch (err) {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`
+        }
+      });
+      
+      if (error) throw error;
+      
+      // No success message needed here as we'll be redirected
+    } catch (err: any) {
       console.error("Google login error:", err);
-      setError("Failed to sign in with Google");
-    } finally {
+      setError(err.message || "Failed to sign in with Google");
       setIsLoading(false);
     }
   };

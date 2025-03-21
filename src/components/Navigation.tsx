@@ -1,22 +1,27 @@
 
 import { useState, useEffect } from "react";
-import { NavLink, useLocation } from "react-router-dom";
-import { Menu, X, LogIn, User, ChevronDown } from "lucide-react";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
+import { Menu, X, LogIn, User, ChevronDown, CreditCard, PieChart, History, BarChart3, TrendingUp, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useAuth } from "@/context/AuthContext";
+import { toast } from "sonner";
 
 const Navigation = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
   const isMobile = useIsMobile();
+  const { user, signOut, isLoading } = useAuth();
 
   // Check if user is on landing page
   const isLandingPage = location.pathname === "/";
@@ -40,14 +45,27 @@ const Navigation = () => {
     setMobileMenuOpen(false);
   }, [location.pathname]);
 
-  const navItems = [
-    { label: "Dashboard", path: "/dashboard" },
-    { label: "Finances", path: "/finances" },
-    { label: "Reports", path: "/reports" },
-    { label: "Markets", path: "/markets" },
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      toast.success("Logged out successfully");
+      navigate("/");
+    } catch (error) {
+      console.error("Error signing out:", error);
+      toast.error("Failed to sign out");
+    }
+  };
+
+  // Nav items when logged in
+  const authenticatedNavItems = [
+    { label: "Dashboard", path: "/dashboard", icon: <PieChart className="w-4 h-4" /> },
+    { label: "Transactions", path: "/transactions", icon: <History className="w-4 h-4" /> },
+    { label: "Reports", path: "/reports", icon: <BarChart3 className="w-4 h-4" /> },
+    { label: "Payment Methods", path: "/payment-methods", icon: <CreditCard className="w-4 h-4" /> },
+    { label: "Markets", path: "/markets", icon: <TrendingUp className="w-4 h-4" /> },
   ];
 
-  // Only show these links on the landing page
+  // Nav items for landing page (when not logged in)
   const landingNavItems = [
     { label: "Features", path: "/#features" },
     { label: "Pricing", path: "/#pricing" },
@@ -55,7 +73,8 @@ const Navigation = () => {
     { label: "Contact", path: "/contact" },
   ];
 
-  const displayItems = isLandingPage ? landingNavItems : navItems;
+  // Choose which nav items to display based on auth state and current page
+  const displayItems = user ? authenticatedNavItems : (isLandingPage ? landingNavItems : []);
 
   return (
     <header
@@ -87,7 +106,7 @@ const Navigation = () => {
               to={item.path}
               className={({ isActive }) =>
                 cn(
-                  "px-3 py-2 rounded-md text-sm font-medium transition-colors relative group",
+                  "px-3 py-2 rounded-md text-sm font-medium transition-colors relative group flex items-center",
                   isActive
                     ? "text-primary"
                     : "text-foreground/80 hover:text-foreground"
@@ -96,6 +115,7 @@ const Navigation = () => {
             >
               {({ isActive }) => (
                 <>
+                  {item.icon && <span className="mr-1.5">{item.icon}</span>}
                   {item.label}
                   <span
                     className={cn(
@@ -111,19 +131,9 @@ const Navigation = () => {
 
         {/* Authentication/User Menu */}
         <div className="hidden md:flex items-center space-x-4">
-          {isLandingPage ? (
-            <>
-              <Button variant="ghost" size="sm" asChild>
-                <NavLink to="/login" className="flex items-center gap-1">
-                  <LogIn className="w-4 h-4 mr-1" />
-                  Log in
-                </NavLink>
-              </Button>
-              <Button size="sm" asChild>
-                <NavLink to="/signup">Sign up</NavLink>
-              </Button>
-            </>
-          ) : (
+          {isLoading ? (
+            <div className="h-9 w-24 rounded-md bg-muted animate-pulse"></div>
+          ) : user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="sm" className="flex items-center gap-2">
@@ -135,17 +145,41 @@ const Navigation = () => {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuItem disabled className="font-medium opacity-100">
+                  {user.email}
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
-                  <NavLink to="/profile" className="cursor-pointer">Profile</NavLink>
+                  <NavLink to="/dashboard" className="cursor-pointer">Dashboard</NavLink>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                  <NavLink to="/settings" className="cursor-pointer">Settings</NavLink>
+                  <NavLink to="/transactions" className="cursor-pointer">Transactions</NavLink>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                  <NavLink to="/" className="cursor-pointer">Log out</NavLink>
+                  <NavLink to="/reports" className="cursor-pointer">Reports</NavLink>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <NavLink to="/payment-methods" className="cursor-pointer">Payment Methods</NavLink>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer text-red-600">
+                  <LogOut className="w-4 h-4 mr-2" />
+                  Log out
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
+          ) : (
+            <>
+              <Button variant="ghost" size="sm" asChild>
+                <NavLink to="/login" className="flex items-center gap-1">
+                  <LogIn className="w-4 h-4 mr-1" />
+                  Log in
+                </NavLink>
+              </Button>
+              <Button size="sm" asChild>
+                <NavLink to="/signup">Sign up</NavLink>
+              </Button>
+            </>
           )}
         </div>
 
@@ -180,20 +214,38 @@ const Navigation = () => {
                 to={item.path}
                 className={({ isActive }) =>
                   cn(
-                    "px-4 py-3 rounded-lg text-base font-medium transition-colors",
+                    "px-4 py-3 rounded-lg text-base font-medium transition-colors flex items-center",
                     isActive
                       ? "bg-primary/10 text-primary"
                       : "hover:bg-muted"
                   )
                 }
               >
+                {item.icon && <span className="mr-2">{item.icon}</span>}
                 {item.label}
               </NavLink>
             ))}
           </div>
 
           <div className="mt-auto pt-6 flex flex-col space-y-3">
-            {isLandingPage ? (
+            {isLoading ? (
+              <div className="h-12 rounded-md bg-muted animate-pulse"></div>
+            ) : user ? (
+              <>
+                <div className="px-4 py-3 rounded-lg bg-muted/50">
+                  <p className="text-sm text-muted-foreground">Signed in as</p>
+                  <p className="font-medium truncate">{user.email}</p>
+                </div>
+                <Button 
+                  variant="destructive" 
+                  className="w-full justify-start"
+                  onClick={handleSignOut}
+                >
+                  <LogOut className="w-4 h-4 mr-2" />
+                  Log out
+                </Button>
+              </>
+            ) : (
               <>
                 <Button variant="outline" asChild className="w-full justify-start">
                   <NavLink to="/login" className="flex items-center">
@@ -204,27 +256,6 @@ const Navigation = () => {
                 <Button asChild className="w-full justify-start">
                   <NavLink to="/signup">Sign up</NavLink>
                 </Button>
-              </>
-            ) : (
-              <>
-                <NavLink
-                  to="/profile"
-                  className="px-4 py-3 rounded-lg text-base font-medium hover:bg-muted transition-colors"
-                >
-                  Profile
-                </NavLink>
-                <NavLink
-                  to="/settings"
-                  className="px-4 py-3 rounded-lg text-base font-medium hover:bg-muted transition-colors"
-                >
-                  Settings
-                </NavLink>
-                <NavLink
-                  to="/"
-                  className="px-4 py-3 rounded-lg text-base font-medium hover:bg-muted transition-colors"
-                >
-                  Log out
-                </NavLink>
               </>
             )}
           </div>
