@@ -14,6 +14,8 @@ import Transactions from "./pages/Transactions";
 import Reports from "./pages/Reports";
 import PaymentMethods from "./pages/PaymentMethods";
 import Markets from "./pages/Markets";
+import Profile from "./pages/Profile";
+import Settings from "./pages/Settings";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
 import NotFound from "./pages/NotFound";
@@ -67,6 +69,16 @@ const App = () => (
             <Route path="/markets" element={
               <ProtectedRoute>
                 <Markets />
+              </ProtectedRoute>
+            } />
+            <Route path="/profile" element={
+              <ProtectedRoute>
+                <Profile />
+              </ProtectedRoute>
+            } />
+            <Route path="/settings" element={
+              <ProtectedRoute>
+                <Settings />
               </ProtectedRoute>
             } />
             

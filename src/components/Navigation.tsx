@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
-import { Menu, X, LogIn, User, ChevronDown, CreditCard, PieChart, History, BarChart3, TrendingUp, LogOut } from "lucide-react";
+import { Menu, X, LogIn, User, ChevronDown, CreditCard, PieChart, History, BarChart3, TrendingUp, LogOut, Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -168,6 +168,15 @@ const Navigation = () => {
                 <DropdownMenuItem asChild>
                   <NavLink to="/payment-methods" className="cursor-pointer">Payment Methods</NavLink>
                 </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <NavLink to="/profile" className="cursor-pointer">Profile</NavLink>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <NavLink to="/settings" className="cursor-pointer">
+                    <Settings className="w-4 h-4 mr-2" />
+                    Settings
+                  </NavLink>
+                </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer text-red-600">
                   <LogOut className="w-4 h-4 mr-2" />
@@ -243,6 +252,14 @@ const Navigation = () => {
                   <p className="text-sm text-muted-foreground">Signed in as</p>
                   <p className="font-medium truncate">{user.email}</p>
                 </div>
+                <NavLink to="/profile" className="px-4 py-3 rounded-lg hover:bg-muted flex items-center">
+                  <User className="w-4 h-4 mr-2" />
+                  Profile
+                </NavLink>
+                <NavLink to="/settings" className="px-4 py-3 rounded-lg hover:bg-muted flex items-center">
+                  <Settings className="w-4 h-4 mr-2" />
+                  Settings
+                </NavLink>
                 <Button 
                   variant="destructive" 
                   className="w-full justify-start"

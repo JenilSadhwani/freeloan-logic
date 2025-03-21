@@ -204,9 +204,9 @@ const Reports = () => {
 
   const formatTooltipValue = (value: any) => {
     if (typeof value === 'number') {
-      return [`$${value.toFixed(2)}`, undefined];
+      return [`$${value.toFixed(2)}`, ''];
     }
-    return [`$${value}`, undefined];
+    return [`$${value}`, ''];
   };
 
   return (
