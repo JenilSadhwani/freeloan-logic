@@ -1,5 +1,5 @@
-
 import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -13,7 +13,6 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
-// Profile form schema
 const profileSchema = z.object({
   first_name: z.string().min(1, "First name is required"),
   last_name: z.string().min(1, "Last name is required"),
@@ -240,7 +239,7 @@ const Profile = () => {
               </CardContent>
               <CardFooter className="flex flex-col space-y-2">
                 <Button variant="outline" className="w-full" asChild>
-                  <NavLink to="/change-password">Change Password</NavLink>
+                  <Link to="/change-password">Change Password</Link>
                 </Button>
               </CardFooter>
             </Card>

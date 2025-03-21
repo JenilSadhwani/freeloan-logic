@@ -73,6 +73,8 @@ const Login = () => {
 
   const handleGoogleLogin = async () => {
     setIsLoading(true);
+    setError("");
+    
     try {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
@@ -81,7 +83,12 @@ const Login = () => {
         }
       });
       
-      if (error) throw error;
+      if (error) {
+        if (error.message.includes("provider is not enabled")) {
+          throw new Error("Google authentication is not enabled. Please enable it in Supabase.");
+        }
+        throw error;
+      }
       
       // No success message needed here as we'll be redirected
     } catch (err: any) {
