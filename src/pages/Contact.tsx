@@ -177,7 +177,7 @@ const Contact = () => {
                 <div>
                   <h2 className="text-2xl font-bold mb-2">Contact Information</h2>
                   <p className="text-muted-foreground mb-6">
-                    Reach out to us using any of the methods below. Our support team is available Monday through Friday, 9am - 6pm EST.
+                    Reach out to us using any of the methods below. Our support team is available Monday through Friday, 9am - 6pm IST.
                   </p>
                   
                   <div className="space-y-4">
@@ -189,7 +189,7 @@ const Contact = () => {
                         <h3 className="font-medium mb-1">Email Us</h3>
                         <p className="text-muted-foreground text-sm mb-2">For general inquiries and support</p>
                         <a href="mailto:hello@financepro.example.com" className="text-primary hover:underline font-medium">
-                          hello@financepro.example.com
+                          jenil.sadhwani04@gmail.com
                         </a>
                       </div>
                     </div>
@@ -200,9 +200,9 @@ const Contact = () => {
                       </div>
                       <div>
                         <h3 className="font-medium mb-1">Call Us</h3>
-                        <p className="text-muted-foreground text-sm mb-2">Mon-Fri from 9am to 6pm EST</p>
+                        <p className="text-muted-foreground text-sm mb-2">Mon-Fri from 9am to 6pm IST</p>
                         <a href="tel:+11234567890" className="text-primary hover:underline font-medium">
-                          (123) 456-7890
+                          (91)-9377566687
                         </a>
                       </div>
                     </div>
@@ -215,9 +215,9 @@ const Contact = () => {
                         <h3 className="font-medium mb-1">Visit Our Office</h3>
                         <p className="text-muted-foreground text-sm mb-2">Stop by for a coffee and a chat</p>
                         <address className="not-italic text-primary font-medium">
-                          123 Financial Street<br />
-                          San Francisco, CA 94107<br />
-                          United States
+                          3165 Estancia Potheri<br />
+                          Chennai, Tamil Nadu 603202<br />
+                          India
                         </address>
                       </div>
                     </div>
