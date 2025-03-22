@@ -3,31 +3,32 @@ import { Mail, MapPin, Phone, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import Layout from "@/components/Layout";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 const About = () => {
   const team = [
     {
       name: "Jyothika Lal",
       role: "Owner",
-      image: "https://placehold.co/300x300/f8fafc/94a3b8?text=SJ",
+      image: "/lovable-uploads/b228bbe5-dbd0-4a65-aebd-f74d6e531365.png",
       bio: "Former fintech executive with 15+ years of experience in financial technology and freelancer ecosystems."
     },
     {
       name: "Jeevesh Mishra",
       role: "Scrum Master",
-      image: "https://placehold.co/300x300/f8fafc/94a3b8?text=MC",
+      image: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=774&q=80",
       bio: "Technology leader with expertise in building secure financial platforms and scalable cloud architecture."
     },
     {
       name: "Jenil Sadhwani",
       role: "Founder and Developer",
-      image: "https://placehold.co/300x300/f8fafc/94a3b8?text=ER",
+      image: "/lovable-uploads/c14b9623-ca3c-4d78-ad2e-4c5b97cadd3b.png",
       bio: "Award-winning designer, developer focused on creating beautiful, intuitive experiences for financial applications."
     },
     {
-      name: "Dr.Antoni Sophia",
+      name: "Dr. Antoni Sophia",
       role: "Guide",
-      image: "https://placehold.co/300x300/f8fafc/94a3b8?text=JW",
+      image: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=776&q=80",
       bio: "Certified financial planner with deep knowledge of freelancer tax strategies and financial planning."
     }
   ];
@@ -75,7 +76,7 @@ const About = () => {
               <div>
                 <div className="aspect-video rounded-2xl overflow-hidden bg-muted shadow-lg">
                   <img 
-                    src="https://placehold.co/800x450/f8fafc/94a3b8?text=Our+Story" 
+                    src="https://images.unsplash.com/photo-1521791136064-7986c2920216?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2069&q=80" 
                     alt="Our story" 
                     className="w-full h-full object-cover"
                   />
@@ -87,7 +88,7 @@ const About = () => {
                   <div className="w-16 h-1 bg-primary rounded-full mb-6"></div>
                 </div>
                 <p className="text-muted-foreground">
-                  FinancePro began in 2018 when our founder, Jenil Sadhwani, experienced firsthand the financial challenges of freelancing. After struggling with inconsistent income, complex tax situations, and financial planning uncertainty, she decided to build the solution she wished had existed.
+                  FinancePro began in 2018 when our founder, Jenil Sadhwani, experienced firsthand the financial challenges of freelancing. After struggling with inconsistent income, complex tax situations, and financial planning uncertainty, he decided to build the solution he wished had existed.
                 </p>
                 <p className="text-muted-foreground">
                   What started as a simple budgeting tool has evolved into a comprehensive financial platform designed specifically for freelancers and independent professionals. We've grown from a team of three to a passionate company of 25, all dedicated to simplifying financial management for the self-employed.
@@ -137,13 +138,12 @@ const About = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
               {team.map((member, index) => (
                 <div key={index} className="flex flex-col items-center text-center hover-lift">
-                  <div className="w-40 h-40 rounded-full overflow-hidden mb-4 bg-muted">
-                    <img 
-                      src={member.image} 
-                      alt={member.name} 
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
+                  <Avatar className="w-40 h-40 mb-4">
+                    <AvatarImage src={member.image} alt={member.name} className="object-cover" />
+                    <AvatarFallback className="text-xl">
+                      {member.name.split(' ').map(n => n[0]).join('')}
+                    </AvatarFallback>
+                  </Avatar>
                   <h3 className="text-xl font-bold mb-1">{member.name}</h3>
                   <p className="text-primary font-medium mb-3">{member.role}</p>
                   <p className="text-sm text-muted-foreground">{member.bio}</p>
@@ -210,7 +210,7 @@ const About = () => {
                 <div className="absolute -inset-x-20 -top-10 -bottom-10 bg-primary/5 rounded-[40px] -rotate-3 transform -z-10" />
                 <div className="aspect-[4/3] rounded-2xl overflow-hidden bg-muted shadow-lg">
                   <img 
-                    src="https://placehold.co/800x600/f8fafc/94a3b8?text=Our+Office" 
+                    src="https://images.unsplash.com/photo-1497366811353-6870744d04b2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2069&q=80" 
                     alt="Our office" 
                     className="w-full h-full object-cover"
                   />
