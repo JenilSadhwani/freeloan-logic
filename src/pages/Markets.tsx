@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from "react";
 import { Search, Filter, ArrowDown, ArrowUp, RefreshCw, Star, Plus, Clock, TrendingUp, TrendingDown } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,7 +12,8 @@ import {
   Tooltip, 
   ResponsiveContainer,
   AreaChart,
-  Area
+  Area,
+  TooltipProps
 } from "recharts";
 import {
   DropdownMenu,
@@ -338,7 +338,7 @@ const Markets = () => {
   }, [fetchMarketData]);
 
   // Custom tooltip for charts
-  const CustomTooltip = ({ active, payload, label }) => {
+  const CustomTooltip = ({ active, payload, label }: TooltipProps<number, string>) => {
     if (active && payload && payload.length) {
       return (
         <div className="bg-background p-2 border border-border rounded-md shadow-md">
