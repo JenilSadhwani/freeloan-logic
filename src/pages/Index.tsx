@@ -1,4 +1,3 @@
-
 import { useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -141,7 +140,7 @@ const Index = () => {
               <div className="absolute inset-0 -z-10 bg-primary/5 rounded-2xl shadow-xl blur-xl" />
               <div className="glass rounded-xl shadow-2xl overflow-hidden">
                 <img 
-                  src="https://placehold.co/1200x600/f8fafc/e2e8f0?text=Dashboard+Preview" 
+                  src="/dashboard-preview.png" 
                   alt="FinancePro Dashboard" 
                   className="w-full h-auto object-cover" 
                 />
