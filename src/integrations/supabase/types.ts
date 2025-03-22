@@ -72,12 +72,43 @@ export type Database = {
         }
         Relationships: []
       }
+      portfolio: {
+        Row: {
+          created_at: string | null
+          id: string
+          purchase_date: string | null
+          purchase_price: number
+          shares: number
+          symbol: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          purchase_date?: string | null
+          purchase_price: number
+          shares: number
+          symbol: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          purchase_date?: string | null
+          purchase_price?: number
+          shares?: number
+          symbol?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string | null
           current_balance: number | null
           email: string | null
           first_name: string | null
+          has_two_factor: boolean | null
           id: string
           is_onboarded: boolean | null
           last_name: string | null
@@ -88,6 +119,7 @@ export type Database = {
           current_balance?: number | null
           email?: string | null
           first_name?: string | null
+          has_two_factor?: boolean | null
           id: string
           is_onboarded?: boolean | null
           last_name?: string | null
@@ -98,6 +130,7 @@ export type Database = {
           current_balance?: number | null
           email?: string | null
           first_name?: string | null
+          has_two_factor?: boolean | null
           id?: string
           is_onboarded?: boolean | null
           last_name?: string | null

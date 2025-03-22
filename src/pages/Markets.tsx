@@ -1,5 +1,6 @@
+
 import { useState, useEffect, useCallback } from "react";
-import { Search, Filter, ArrowDown, ArrowUp, RefreshCw, Star, Plus, Clock, TrendingUp, TrendingDown, Filter as FilterIcon } from "lucide-react";
+import { Search, Filter, ArrowDown, ArrowUp, RefreshCw, Star, Plus, Clock, TrendingUp, TrendingDown } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -360,6 +361,114 @@ const Markets = () => {
   const activeStock = stockList.find(
     (stock) => stock.symbol === selectedStock
   );
+
+  // Mock data for fallback if API fails
+  const mockStockData = [
+    {
+      symbol: "AAPL",
+      name: "Apple Inc.",
+      price: 173.5,
+      change: 2.3,
+      changePercent: 1.35,
+      volume: "45.3M",
+      marketCap: "2.8T",
+      starred: false,
+      data: Array.from({ length: 20 }, (_, i) => ({
+        time: i,
+        value: 173.5 * (0.98 + Math.random() * 0.04)
+      }))
+    },
+    {
+      symbol: "MSFT",
+      name: "Microsoft Corporation",
+      price: 337.8,
+      change: 3.75,
+      changePercent: 1.12,
+      volume: "22.1M",
+      marketCap: "2.5T",
+      starred: false,
+      data: Array.from({ length: 20 }, (_, i) => ({
+        time: i,
+        value: 337.8 * (0.98 + Math.random() * 0.04)
+      }))
+    },
+    {
+      symbol: "GOOGL",
+      name: "Alphabet Inc.",
+      price: 142.65,
+      change: -0.85,
+      changePercent: -0.59,
+      volume: "18.7M",
+      marketCap: "1.8T",
+      starred: false,
+      data: Array.from({ length: 20 }, (_, i) => ({
+        time: i,
+        value: 142.65 * (0.98 + Math.random() * 0.04)
+      }))
+    }
+  ];
+
+  const mockIndexData = [
+    {
+      symbol: "SPY",
+      name: "S&P 500 ETF",
+      price: 451.23,
+      change: 1.05,
+      changePercent: 0.23,
+      volume: "55.7M",
+      data: Array.from({ length: 30 }, (_, i) => ({
+        day: i,
+        value: 451.23 * (0.97 + Math.sin(i / 15) * 0.03 + Math.random() * 0.01)
+      }))
+    },
+    {
+      symbol: "QQQ",
+      name: "Nasdaq 100 ETF",
+      price: 380.45,
+      change: 2.35,
+      changePercent: 0.62,
+      volume: "42.3M",
+      data: Array.from({ length: 30 }, (_, i) => ({
+        day: i,
+        value: 380.45 * (0.97 + Math.sin(i / 15) * 0.03 + Math.random() * 0.01)
+      }))
+    },
+    {
+      symbol: "DIA",
+      name: "Dow Jones ETF",
+      price: 346.78,
+      change: -0.45,
+      changePercent: -0.13,
+      volume: "12.1M",
+      data: Array.from({ length: 30 }, (_, i) => ({
+        day: i,
+        value: 346.78 * (0.97 + Math.sin(i / 15) * 0.03 + Math.random() * 0.01)
+      }))
+    }
+  ];
+
+  const mockMarketData = {
+    AAPL: {
+      chartData: Array.from({ length: 90 }, (_, i) => ({
+        date: new Date(Date.now() - (90 - i) * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        value: 173.5 * (0.95 + Math.sin(i / 20) * 0.05 + (i / 90) * 0.05 + (Math.random() * 0.05 - 0.025))
+      })),
+      stats: {
+        open: 172.3,
+        high: 175.1,
+        low: 171.8,
+        volume: "45.3M",
+        avgVolume: "67.2M",
+        marketCap: "2.8T",
+        peRatio: 28.5,
+        dividend: 0.24,
+        dividendYield: 0.55,
+        eps: 6.08,
+        week52High: 182.94,
+        week52Low: 124.17
+      }
+    }
+  };
 
   return (
     <Layout>
@@ -883,4 +992,91 @@ const Markets = () => {
                                         style={{ width: "23%" }}
                                       />
                                       <div
-                                        className="
+                                        className="bg-red-500 h-full"
+                                        style={{ width: "3%" }}
+                                      />
+                                    </div>
+                                  </div>
+                                  <div>
+                                    <div className="flex items-center justify-between mb-2">
+                                      <div className="text-sm font-medium">
+                                        Technical Indicators
+                                      </div>
+                                      <div className="text-sm font-medium">
+                                        Neutral
+                                      </div>
+                                    </div>
+                                    <div className="flex h-2 w-full rounded-full overflow-hidden">
+                                      <div
+                                        className="bg-green-500 h-full"
+                                        style={{ width: "45%" }}
+                                      />
+                                      <div
+                                        className="bg-yellow-500 h-full"
+                                        style={{ width: "32%" }}
+                                      />
+                                      <div
+                                        className="bg-red-500 h-full"
+                                        style={{ width: "23%" }}
+                                      />
+                                    </div>
+                                  </div>
+                                </div>
+                              </TabsContent>
+                              <TabsContent value="news" className="mt-4">
+                                <div className="space-y-3">
+                                  <div className="p-3 border border-border rounded-lg">
+                                    <div className="text-sm font-medium">{stockDetails.name} Reports Strong Quarterly Results</div>
+                                    <div className="text-xs text-muted-foreground mt-1">
+                                      Revenue and earnings exceeded analyst expectations, driven by strong product performance and margin expansion.
+                                    </div>
+                                    <div className="text-xs text-muted-foreground mt-2">2 hours ago • Business Insider</div>
+                                  </div>
+                                  <div className="p-3 border border-border rounded-lg">
+                                    <div className="text-sm font-medium">Analysts Raise Price Target for {stockDetails.symbol}</div>
+                                    <div className="text-xs text-muted-foreground mt-1">
+                                      Multiple analysts have raised their price targets following the company's latest product announcements.
+                                    </div>
+                                    <div className="text-xs text-muted-foreground mt-2">5 hours ago • Market Watch</div>
+                                  </div>
+                                  <div className="p-3 border border-border rounded-lg">
+                                    <div className="text-sm font-medium">{stockDetails.name} Expands Operations</div>
+                                    <div className="text-xs text-muted-foreground mt-1">
+                                      The company announced plans to expand its operations in Asia, potentially opening new growth opportunities.
+                                    </div>
+                                    <div className="text-xs text-muted-foreground mt-2">1 day ago • Bloomberg</div>
+                                  </div>
+                                </div>
+                              </TabsContent>
+                            </Tabs>
+                          </CardContent>
+                        </Card>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="flex items-center justify-center h-64">
+                      <div className="text-center">
+                        <div className="text-lg font-medium">
+                          Select a stock to view details
+                        </div>
+                        <div className="text-sm text-muted-foreground mt-1">
+                          Choose from the watchlist on the left
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="portfolio" className="space-y-6">
+              <Portfolio />
+            </TabsContent>
+          </Tabs>
+        </div>
+      </div>
+    </Layout>
+  );
+};
+
+export default Markets;

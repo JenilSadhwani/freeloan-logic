@@ -41,6 +41,7 @@ serve(async (req) => {
     const url = new URL(req.url)
     const endpoint = url.searchParams.get('endpoint') || 'market/data'
     const symbols = url.searchParams.get('symbols') || 'AAPL,MSFT,GOOGL'
+    const period = url.searchParams.get('period') || '1m'
     
     // FinLab API key from environment variable
     const FINLAB_API_KEY = Deno.env.get('FINLAB_API_KEY')
@@ -52,8 +53,13 @@ serve(async (req) => {
       )
     }
 
-    // Call the FinLab API
-    const apiUrl = `https://api.finlab.com/v1/${endpoint}?symbols=${symbols}`
+    // Build the API URL with all parameters
+    let apiUrl = `https://api.finlab.com/v1/${endpoint}?symbols=${symbols}`
+    
+    // Add period parameter if present and endpoint is for historical data
+    if (endpoint === 'stocks/historical' && period) {
+      apiUrl += `&period=${period}`
+    }
     
     console.log(`Fetching data from FinLab API: ${apiUrl}`)
     
@@ -63,6 +69,15 @@ serve(async (req) => {
         'Content-Type': 'application/json'
       }
     })
+
+    if (!response.ok) {
+      const errorText = await response.text()
+      console.error(`FinLab API error (${response.status}): ${errorText}`)
+      return new Response(
+        JSON.stringify({ error: `FinLab API error: ${response.statusText}`, details: errorText }),
+        { status: response.status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
 
     const data = await response.json()
     
