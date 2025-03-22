@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { PlusCircle, Trash2, RefreshCw } from "lucide-react";
@@ -15,7 +16,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
 
-export interface PortfolioStock {
+interface PortfolioStock {
   id: string;
   symbol: string;
   shares: number;
@@ -25,40 +26,6 @@ export interface PortfolioStock {
   gain_loss?: number;
   gain_loss_percent?: number;
 }
-
-export const usePortfolio = () => {
-  const { user } = useAuth();
-  
-  const addStockToPortfolio = async (symbol: string, shares: number, price: number) => {
-    if (!user) {
-      toast.error("Please log in to add stocks to your portfolio");
-      return false;
-    }
-    
-    try {
-      const { data, error } = await supabase
-        .from("portfolio")
-        .insert({
-          user_id: user.id,
-          symbol: symbol.toUpperCase(),
-          shares: shares,
-          purchase_price: price
-        })
-        .select();
-
-      if (error) throw error;
-
-      toast.success(`${symbol} added to your portfolio`);
-      return true;
-    } catch (error) {
-      console.error("Error adding stock:", error);
-      toast.error("Failed to add stock to portfolio");
-      return false;
-    }
-  };
-  
-  return { addStockToPortfolio };
-};
 
 export function Portfolio() {
   const { user } = useAuth();
@@ -114,6 +81,7 @@ export function Portfolio() {
       
       const data = await response.json();
       
+      // Update the stocks with current prices
       const updatedStocks = portfolioStocks.map(stock => {
         const quote = data.data?.find(q => q.symbol === stock.symbol);
         const currentPrice = quote?.last_price || stock.purchase_price;
