@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { Search, Filter, ArrowDown, ArrowUp, RefreshCw, Star, Plus, Clock, TrendingUp, TrendingDown } from "lucide-react";
+import { Search, Filter, ArrowDown, ArrowUp, RefreshCw, Star, Plus, Clock, TrendingUp, TrendingDown, Wallet } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,12 +21,21 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import Layout from "@/components/Layout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
-import Portfolio from "@/components/Portfolio";
+import Portfolio, { usePortfolio } from "@/components/Portfolio";
 
 // Time periods for chart
 const timePeriods = [
@@ -40,6 +49,7 @@ const timePeriods = [
 
 const Markets = () => {
   const { user } = useAuth();
+  const { addStockToPortfolio } = usePortfolio();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedStock, setSelectedStock] = useState<string | null>("AAPL");
   const [stockList, setStockList] = useState([]);
@@ -50,7 +60,9 @@ const Markets = () => {
   const [activePeriod, setActivePeriod] = useState("3m");
   const [indexData, setIndexData] = useState([]);
   const [activeTab, setActiveTab] = useState("market");
-
+  const [addToPortfolioOpen, setAddToPortfolioOpen] = useState(false);
+  const [sharesToAdd, setSharesToAdd] = useState(1);
+  
   // Format number with commas and precision
   const formatNumber = (num, precision = 2) => {
     if (num === undefined || num === null) return "-";
@@ -336,6 +348,27 @@ const Markets = () => {
   useEffect(() => {
     fetchMarketData();
   }, [fetchMarketData]);
+
+  // Handle adding currently selected stock to portfolio
+  const handleAddToPortfolio = async () => {
+    if (!stockDetails || !sharesToAdd) {
+      toast.error("Please provide the number of shares");
+      return;
+    }
+    
+    const success = await addStockToPortfolio(
+      stockDetails.symbol,
+      sharesToAdd,
+      stockDetails.price
+    );
+    
+    if (success) {
+      setAddToPortfolioOpen(false);
+      setSharesToAdd(1);
+      // Switch to portfolio tab to show the newly added stock
+      setActiveTab("portfolio");
+    }
+  };
 
   // Custom tooltip for charts
   const CustomTooltip = ({ active, payload, label }: TooltipProps<number, string>) => {
@@ -706,6 +739,60 @@ const Markets = () => {
                                     }`}
                                   />
                                 </button>
+                                <Dialog open={addToPortfolioOpen} onOpenChange={setAddToPortfolioOpen}>
+                                  <DialogTrigger asChild>
+                                    <Button 
+                                      variant="outline" 
+                                      size="sm" 
+                                      className="ml-2"
+                                      disabled={!user}
+                                    >
+                                      <Wallet className="h-4 w-4 mr-1" />
+                                      Add to Portfolio
+                                    </Button>
+                                  </DialogTrigger>
+                                  <DialogContent>
+                                    <DialogHeader>
+                                      <DialogTitle>Add {stockDetails.symbol} to Portfolio</DialogTitle>
+                                      <DialogDescription>
+                                        Enter the number of shares you want to add to your portfolio.
+                                        Current price: ${stockDetails.price.toFixed(2)}
+                                      </DialogDescription>
+                                    </DialogHeader>
+                                    <div className="py-4">
+                                      <div className="space-y-4">
+                                        <div className="grid grid-cols-2 gap-4">
+                                          <div>
+                                            <label className="text-sm font-medium">Shares</label>
+                                            <Input
+                                              type="number"
+                                              min="0.01"
+                                              step="0.01"
+                                              value={sharesToAdd}
+                                              onChange={(e) => setSharesToAdd(parseFloat(e.target.value))}
+                                              className="mt-1"
+                                            />
+                                          </div>
+                                          <div>
+                                            <label className="text-sm font-medium">Total Value</label>
+                                            <div className="mt-1 p-2 border rounded-md bg-muted/50">
+                                              ${(sharesToAdd * stockDetails.price).toFixed(2)}
+                                            </div>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                    <DialogFooter>
+                                      <Button variant="outline" onClick={() => setAddToPortfolioOpen(false)}>
+                                        Cancel
+                                      </Button>
+                                      <Button onClick={handleAddToPortfolio}>
+                                        <Plus className="h-4 w-4 mr-1" />
+                                        Add to Portfolio
+                                      </Button>
+                                    </DialogFooter>
+                                  </DialogContent>
+                                </Dialog>
                               </div>
                               <p className="text-muted-foreground">
                                 {stockDetails.name}
@@ -755,328 +842,4 @@ const Markets = () => {
                             </div>
                             <div className="flex items-center text-xs text-muted-foreground">
                               <Clock className="h-3 w-3 mr-1" />
-                              Last updated: {new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} EST
-                            </div>
-                          </div>
-
-                          <div className="h-72">
-                            {isChartLoading ? (
-                              <div className="h-full flex items-center justify-center">
-                                <div className="animate-spin h-8 w-8 border-2 border-primary border-r-transparent rounded-full"></div>
-                              </div>
-                            ) : (
-                              <ResponsiveContainer width="100%" height="100%">
-                                <AreaChart
-                                  data={chartData}
-                                  margin={{
-                                    top: 5,
-                                    right: 5,
-                                    left: 5,
-                                    bottom: 5,
-                                  }}
-                                >
-                                  <defs>
-                                    <linearGradient
-                                      id="colorValue"
-                                      x1="0"
-                                      y1="0"
-                                      x2="0"
-                                      y2="1"
-                                    >
-                                      <stop
-                                        offset="5%"
-                                        stopColor="#4f46e5"
-                                        stopOpacity={0.3}
-                                      />
-                                      <stop
-                                        offset="95%"
-                                        stopColor="#4f46e5"
-                                        stopOpacity={0}
-                                      />
-                                    </linearGradient>
-                                  </defs>
-                                  <CartesianGrid
-                                    strokeDasharray="3 3"
-                                    vertical={false}
-                                    stroke="#f3f4f6"
-                                  />
-                                  <XAxis
-                                    dataKey="date"
-                                    tickLine={false}
-                                    axisLine={false}
-                                    tick={{ fontSize: 12 }}
-                                    tickFormatter={(value) => {
-                                      const date = new Date(value);
-                                      return date.toLocaleDateString("en-US", {
-                                        month: "short",
-                                        day: "numeric",
-                                      });
-                                    }}
-                                    interval={Math.floor(chartData.length / 6)}
-                                  />
-                                  <YAxis
-                                    domain={['auto', 'auto']}
-                                    tickLine={false}
-                                    axisLine={false}
-                                    tick={{ fontSize: 12 }}
-                                    tickFormatter={(value) => `$${formatNumber(value, 0)}`}
-                                    width={50}
-                                  />
-                                  <Tooltip content={<CustomTooltip />} />
-                                  <Area
-                                    type="monotone"
-                                    dataKey="value"
-                                    stroke="#4f46e5"
-                                    strokeWidth={2}
-                                    fillOpacity={1}
-                                    fill="url(#colorValue)"
-                                    isAnimationActive={true}
-                                    animationDuration={1000}
-                                    animationEasing="ease-out"
-                                  />
-                                </AreaChart>
-                              </ResponsiveContainer>
-                            )}
-                          </div>
-                        </CardContent>
-                      </Card>
-
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                        <Card>
-                          <CardHeader className="pb-2">
-                            <CardTitle className="text-lg">Key Statistics</CardTitle>
-                          </CardHeader>
-                          <CardContent>
-                            <div className="grid grid-cols-2 gap-4">
-                              <div>
-                                <div className="text-sm text-muted-foreground">
-                                  Open
-                                </div>
-                                <div className="font-medium">
-                                  ${formatNumber(stockDetails.stats.open)}
-                                </div>
-                              </div>
-                              <div>
-                                <div className="text-sm text-muted-foreground">
-                                  High
-                                </div>
-                                <div className="font-medium">
-                                  ${formatNumber(stockDetails.stats.high)}
-                                </div>
-                              </div>
-                              <div>
-                                <div className="text-sm text-muted-foreground">
-                                  Low
-                                </div>
-                                <div className="font-medium">
-                                  ${formatNumber(stockDetails.stats.low)}
-                                </div>
-                              </div>
-                              <div>
-                                <div className="text-sm text-muted-foreground">
-                                  Volume
-                                </div>
-                                <div className="font-medium">
-                                  {stockDetails.stats.volume}
-                                </div>
-                              </div>
-                              <div>
-                                <div className="text-sm text-muted-foreground">
-                                  Avg Volume
-                                </div>
-                                <div className="font-medium">
-                                  {stockDetails.stats.avgVolume}
-                                </div>
-                              </div>
-                              <div>
-                                <div className="text-sm text-muted-foreground">
-                                  Market Cap
-                                </div>
-                                <div className="font-medium">
-                                  {stockDetails.stats.marketCap}
-                                </div>
-                              </div>
-                              <div>
-                                <div className="text-sm text-muted-foreground">
-                                  P/E Ratio
-                                </div>
-                                <div className="font-medium">
-                                  {formatNumber(stockDetails.stats.peRatio)}
-                                </div>
-                              </div>
-                              <div>
-                                <div className="text-sm text-muted-foreground">
-                                  EPS
-                                </div>
-                                <div className="font-medium">
-                                  ${formatNumber(stockDetails.stats.eps)}
-                                </div>
-                              </div>
-                              <div>
-                                <div className="text-sm text-muted-foreground">
-                                  Dividend
-                                </div>
-                                <div className="font-medium">
-                                  ${formatNumber(stockDetails.stats.dividend)} ({formatNumber(stockDetails.stats.dividendYield)}%)
-                                </div>
-                              </div>
-                              <div>
-                                <div className="text-sm text-muted-foreground">
-                                  52W High
-                                </div>
-                                <div className="font-medium">
-                                  ${formatNumber(stockDetails.stats.week52High)}
-                                </div>
-                              </div>
-                              <div>
-                                <div className="text-sm text-muted-foreground">
-                                  52W Low
-                                </div>
-                                <div className="font-medium">
-                                  ${formatNumber(stockDetails.stats.week52Low)}
-                                </div>
-                              </div>
-                            </div>
-                          </CardContent>
-                        </Card>
-
-                        <Card>
-                          <CardHeader className="pb-2">
-                            <CardTitle className="text-lg">Analysis</CardTitle>
-                          </CardHeader>
-                          <CardContent>
-                            <Tabs defaultValue="sentiment">
-                              <TabsList className="w-full">
-                                <TabsTrigger value="sentiment" className="flex-1">
-                                  Sentiment
-                                </TabsTrigger>
-                                <TabsTrigger value="news" className="flex-1">
-                                  News
-                                </TabsTrigger>
-                              </TabsList>
-                              <TabsContent value="sentiment" className="mt-4">
-                                <div className="space-y-4">
-                                  <div>
-                                    <div className="flex items-center justify-between mb-2">
-                                      <div className="text-sm font-medium">
-                                        Buy Signal
-                                      </div>
-                                      <div className="text-sm text-green-600 font-medium flex items-center">
-                                        <TrendingUp className="h-4 w-4 mr-1" />
-                                        Strong
-                                      </div>
-                                    </div>
-                                    <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
-                                      <div
-                                        className="bg-green-500 h-full rounded-full"
-                                        style={{ width: "85%" }}
-                                      />
-                                    </div>
-                                  </div>
-                                  <div>
-                                    <div className="flex items-center justify-between mb-2">
-                                      <div className="text-sm font-medium">
-                                        Analyst Ratings
-                                      </div>
-                                      <div className="text-sm font-medium">
-                                        25 Buy · 8 Hold · 1 Sell
-                                      </div>
-                                    </div>
-                                    <div className="flex h-2 w-full rounded-full overflow-hidden">
-                                      <div
-                                        className="bg-green-500 h-full"
-                                        style={{ width: "74%" }}
-                                      />
-                                      <div
-                                        className="bg-yellow-500 h-full"
-                                        style={{ width: "23%" }}
-                                      />
-                                      <div
-                                        className="bg-red-500 h-full"
-                                        style={{ width: "3%" }}
-                                      />
-                                    </div>
-                                  </div>
-                                  <div>
-                                    <div className="flex items-center justify-between mb-2">
-                                      <div className="text-sm font-medium">
-                                        Technical Indicators
-                                      </div>
-                                      <div className="text-sm font-medium">
-                                        Neutral
-                                      </div>
-                                    </div>
-                                    <div className="flex h-2 w-full rounded-full overflow-hidden">
-                                      <div
-                                        className="bg-green-500 h-full"
-                                        style={{ width: "45%" }}
-                                      />
-                                      <div
-                                        className="bg-yellow-500 h-full"
-                                        style={{ width: "32%" }}
-                                      />
-                                      <div
-                                        className="bg-red-500 h-full"
-                                        style={{ width: "23%" }}
-                                      />
-                                    </div>
-                                  </div>
-                                </div>
-                              </TabsContent>
-                              <TabsContent value="news" className="mt-4">
-                                <div className="space-y-3">
-                                  <div className="p-3 border border-border rounded-lg">
-                                    <div className="text-sm font-medium">{stockDetails.name} Reports Strong Quarterly Results</div>
-                                    <div className="text-xs text-muted-foreground mt-1">
-                                      Revenue and earnings exceeded analyst expectations, driven by strong product performance and margin expansion.
-                                    </div>
-                                    <div className="text-xs text-muted-foreground mt-2">2 hours ago • Business Insider</div>
-                                  </div>
-                                  <div className="p-3 border border-border rounded-lg">
-                                    <div className="text-sm font-medium">Analysts Raise Price Target for {stockDetails.symbol}</div>
-                                    <div className="text-xs text-muted-foreground mt-1">
-                                      Multiple analysts have raised their price targets following the company's latest product announcements.
-                                    </div>
-                                    <div className="text-xs text-muted-foreground mt-2">5 hours ago • Market Watch</div>
-                                  </div>
-                                  <div className="p-3 border border-border rounded-lg">
-                                    <div className="text-sm font-medium">{stockDetails.name} Expands Operations</div>
-                                    <div className="text-xs text-muted-foreground mt-1">
-                                      The company announced plans to expand its operations in Asia, potentially opening new growth opportunities.
-                                    </div>
-                                    <div className="text-xs text-muted-foreground mt-2">1 day ago • Bloomberg</div>
-                                  </div>
-                                </div>
-                              </TabsContent>
-                            </Tabs>
-                          </CardContent>
-                        </Card>
-                      </div>
-                    </>
-                  ) : (
-                    <div className="flex items-center justify-center h-64">
-                      <div className="text-center">
-                        <div className="text-lg font-medium">
-                          Select a stock to view details
-                        </div>
-                        <div className="text-sm text-muted-foreground mt-1">
-                          Choose from the watchlist on the left
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </TabsContent>
-            
-            <TabsContent value="portfolio" className="space-y-6">
-              <Portfolio />
-            </TabsContent>
-          </Tabs>
-        </div>
-      </div>
-    </Layout>
-  );
-};
-
-export default Markets;
+                              Last updated: {new Date().
