@@ -190,8 +190,8 @@ const Index = () => {
                   <span className="text-primary font-medium">AJ</span>
                 </div>
                 <div>
-                  <p className="font-medium">Alex Johnson</p>
-                  <p className="text-sm text-muted-foreground">Web Developer & Designer</p>
+                  <p className="font-medium">Jenil Sadhwani</p>
+                  <p className="text-sm text-muted-foreground">Founder and Developer</p>
                 </div>
               </footer>
             </blockquote>
