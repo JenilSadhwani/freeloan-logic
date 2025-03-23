@@ -16,7 +16,7 @@ const About = () => {
     {
       name: "Jeevesh Mishra",
       role: "Scrum Master",
-      image: "/lovable-uploads/4576439f-92ac-4cc6-9349-8dba1a364891.png",
+      image: "/lovable-uploads/f10a09d0-c131-443d-bc2a-015298c36dfb.png",
       bio: "Technology leader with expertise in building secure financial platforms and scalable cloud architecture."
     },
     {
