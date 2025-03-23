@@ -1,4 +1,5 @@
-// Updated Dashboard with Supabase Integration
+
+// Updated Dashboard with Supabase Integration and Reports link
 import { useState, useEffect } from "react";
 import {
   DollarSign,
@@ -13,6 +14,7 @@ import {
   TrendingUp,
   Users,
   RefreshCw,
+  FileText,
 } from "lucide-react";
 import {
   Card,
@@ -42,6 +44,7 @@ import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { toast } from "sonner";
+import { Link } from "react-router-dom";
 
 const Dashboard = () => {
   const [transactions, setTransactions] = useState([]);
@@ -166,15 +169,28 @@ const Dashboard = () => {
               <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
               <p className="text-muted-foreground">Your financial overview at a glance.</p>
             </div>
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className="flex items-center gap-2"
-              onClick={toggleAutoUpdate}
-            >
-              <RefreshCw className="h-4 w-4" />
-              {autoUpdateEnabled ? "Auto-update On" : "Auto-update Off"}
-            </Button>
+            <div className="flex items-center gap-3">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="flex items-center gap-2"
+                onClick={toggleAutoUpdate}
+              >
+                <RefreshCw className="h-4 w-4" />
+                {autoUpdateEnabled ? "Auto-update On" : "Auto-update Off"}
+              </Button>
+              <Button 
+                variant="outline"
+                size="sm"
+                className="flex items-center gap-2"
+                asChild
+              >
+                <Link to="/reports">
+                  <FileText className="h-4 w-4" />
+                  View Reports
+                </Link>
+              </Button>
+            </div>
           </div>
 
           <Tabs defaultValue="overview" value={activeTab} onValueChange={setActiveTab} className="space-y-6">
