@@ -1,5 +1,5 @@
 
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Outlet } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "./context/AuthContext";
@@ -39,7 +39,7 @@ function App() {
             <Route path="/auth/callback" element={<AuthCallback />} />
 
             {/* Protected Routes */}
-            <Route element={<ProtectedRoute />}>
+            <Route element={<ProtectedRoute><Outlet /></ProtectedRoute>}>
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/transactions" element={<Transactions />} />

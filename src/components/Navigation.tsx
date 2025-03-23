@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { NavLink, Link, useLocation } from "react-router-dom";
 import {
@@ -27,20 +26,18 @@ import {
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/context/AuthContext";
-import { useMobile } from "@/hooks/use-mobile";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const Navigation = () => {
   const { user, signOut } = useAuth();
-  const isMobile = useMobile();
+  const isMobile = useIsMobile();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const location = useLocation();
 
-  // Close mobile menu when route changes
   useEffect(() => {
     setIsMenuOpen(false);
   }, [location.pathname]);
 
-  // Get user's initial for avatar
   const getUserInitial = () => {
     if (user?.email) {
       return user.email.charAt(0).toUpperCase();
@@ -72,7 +69,6 @@ const Navigation = () => {
           </Link>
         </div>
 
-        {/* Desktop Navigation */}
         {!isMobile && (
           <div className="hidden lg:flex lg:items-center lg:space-x-6">
             {user ? (
@@ -119,7 +115,6 @@ const Navigation = () => {
           </div>
         )}
 
-        {/* Auth Buttons or User Menu */}
         <div className="flex items-center gap-2">
           {user ? (
             <DropdownMenu>
@@ -176,7 +171,6 @@ const Navigation = () => {
             </div>
           )}
 
-          {/* Mobile Menu Button */}
           {isMobile && (
             <Button
               variant="ghost"
@@ -195,7 +189,6 @@ const Navigation = () => {
         </div>
       </div>
 
-      {/* Mobile Menu */}
       {isMobile && isMenuOpen && (
         <div className="fixed inset-0 top-16 z-50 bg-background animate-in fade-in">
           <div className="container px-4 py-6 sm:px-6">
@@ -218,7 +211,7 @@ const Navigation = () => {
                       {item.icon}
                       {item.label}
                     </NavLink>
-                  ))}
+                  )}
                   <div className="border-t my-2"></div>
                   <NavLink
                     to="/profile"
