@@ -1,3 +1,4 @@
+
 // Updated Dashboard with Supabase Integration
 import { useState, useEffect } from "react";
 import {
@@ -40,11 +41,14 @@ import Layout from "@/components/Layout";
 import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
+import { toast } from "sonner";
 
 const Dashboard = () => {
   const [transactions, setTransactions] = useState([]);
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState("overview");
+  const [currentBalance, setCurrentBalance] = useState(0);
+  const [isUpdatingBalance, setIsUpdatingBalance] = useState(false);
 
   useEffect(() => {
     const fetchTransactions = async () => {
@@ -63,7 +67,22 @@ const Dashboard = () => {
         setTransactions(formatted);
       }
     };
+
+    const fetchCurrentBalance = async () => {
+      if (!user) return;
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("current_balance")
+        .eq("id", user.id)
+        .single();
+
+      if (!error && data) {
+        setCurrentBalance(data.current_balance || 0);
+      }
+    };
+
     fetchTransactions();
+    fetchCurrentBalance();
   }, [user]);
 
   const totalIncome = transactions.filter(t => t.type === "income").reduce((sum, t) => sum + t.amount, 0);
@@ -71,6 +90,29 @@ const Dashboard = () => {
   const netProfit = totalIncome - totalExpenses;
   const profitPercentage = totalIncome ? ((netProfit / totalIncome) * 100).toFixed(1) : "0";
   const isProfit = netProfit >= 0;
+
+  const updateBalanceWithProfit = async () => {
+    if (!user || isUpdatingBalance) return;
+    
+    setIsUpdatingBalance(true);
+    
+    const newBalance = currentBalance + netProfit;
+    
+    const { error } = await supabase
+      .from("profiles")
+      .update({ current_balance: newBalance })
+      .eq("id", user.id);
+      
+    if (error) {
+      toast.error("Failed to update balance");
+      console.error("Error updating balance:", error);
+    } else {
+      setCurrentBalance(newBalance);
+      toast.success("Balance updated with net profit");
+    }
+    
+    setIsUpdatingBalance(false);
+  };
 
   const recentTransactions = transactions.slice(0, 5);
 
@@ -121,6 +163,24 @@ const Dashboard = () => {
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <Card>
                   <CardHeader>
+                    <CardDescription>Current Balance</CardDescription>
+                    <CardTitle className="text-2xl font-bold flex items-center">
+                      ${currentBalance.toLocaleString()}
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="ml-2 h-6 text-xs" 
+                        onClick={updateBalanceWithProfit}
+                        disabled={isUpdatingBalance}
+                      >
+                        <Plus className="h-3 w-3 mr-1" /> Add Profit
+                      </Button>
+                    </CardTitle>
+                  </CardHeader>
+                </Card>
+
+                <Card>
+                  <CardHeader>
                     <CardDescription>Total Income</CardDescription>
                     <CardTitle className="text-2xl font-bold flex items-center">
                       ${totalIncome.toLocaleString()}
@@ -156,13 +216,6 @@ const Dashboard = () => {
                         {profitPercentage}%
                       </span>
                     </CardTitle>
-                  </CardHeader>
-                </Card>
-
-                <Card>
-                  <CardHeader>
-                    <CardDescription>Upcoming Income</CardDescription>
-                    <CardTitle className="text-2xl font-bold">$0</CardTitle>
                   </CardHeader>
                 </Card>
               </div>

@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
+import { supabase } from "@/integrations/supabase/client";
 
 // Function to generate a random TOTP secret
 const generateTOTPSecret = () => {
@@ -39,15 +40,15 @@ const Settings = () => {
     }
     return false;
   });
-  
-  const [notificationSettings, setNotificationSettings] = useState({
-    emailNotifications: true,
-    pushNotifications: false,
-    transactionAlerts: true,
-    marketUpdates: false,
-    weeklyReports: true,
-  });
 
+  // Password change states
+  const [showChangePasswordDialog, setShowChangePasswordDialog] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
+
+  // Two-factor auth states
   const [showSetupTwoFactorDialog, setShowSetupTwoFactorDialog] = useState(false);
   const [showVerifyTwoFactorDialog, setShowVerifyTwoFactorDialog] = useState(false);
   const [twoFactorQRUrl, setTwoFactorQRUrl] = useState("");
@@ -55,6 +56,15 @@ const Settings = () => {
   const [verificationCode, setVerificationCode] = useState("");
   const [isVerifying, setIsVerifying] = useState(false);
   const [is2FAEnabled, setIs2FAEnabled] = useState(false);
+  
+  // Notification settings
+  const [notificationSettings, setNotificationSettings] = useState({
+    emailNotifications: true,
+    pushNotifications: false,
+    transactionAlerts: true,
+    marketUpdates: false,
+    weeklyReports: true,
+  });
   
   // Initialize 2FA status from useAuth
   useEffect(() => {
@@ -104,23 +114,83 @@ const Settings = () => {
   };
 
   const handleVerifyTwoFactor = async () => {
+    if (verificationCode.length !== 6) {
+      toast.error("Please enter a 6-digit verification code");
+      return;
+    }
+    
     setIsVerifying(true);
     try {
       // In a real app, this would validate against the secret
       // For demo purposes, any 6-digit code is valid
-      if (verificationCode.length === 6) {
-        setIs2FAEnabled(true);
-        setShowVerifyTwoFactorDialog(false);
-        setShowSetupTwoFactorDialog(false);
-        toast.success("Two-factor authentication enabled successfully");
-      } else {
-        toast.error("Invalid verification code. Please try again.");
+      setIs2FAEnabled(true);
+      setShowVerifyTwoFactorDialog(false);
+      setShowSetupTwoFactorDialog(false);
+      
+      // Update the database profile
+      if (user) {
+        await supabase
+          .from('profiles')
+          .update({ has_two_factor: true })
+          .eq('id', user.id);
       }
+      
+      toast.success("Two-factor authentication enabled successfully");
     } catch (error) {
       console.error("Error verifying 2FA:", error);
       toast.error("Failed to verify two-factor authentication");
+    } finally {
+      setIsVerifying(false);
     }
-    setIsVerifying(false);
+  };
+
+  const handleChangePassword = async () => {
+    // Validate inputs
+    if (!currentPassword) {
+      toast.error("Please enter your current password");
+      return;
+    }
+    
+    if (!newPassword) {
+      toast.error("Please enter a new password");
+      return;
+    }
+    
+    if (newPassword !== confirmPassword) {
+      toast.error("New passwords do not match");
+      return;
+    }
+    
+    if (newPassword.length < 6) {
+      toast.error("Password must be at least 6 characters");
+      return;
+    }
+    
+    setIsChangingPassword(true);
+    
+    try {
+      // Change password using Supabase Auth
+      const { error } = await supabase.auth.updateUser({
+        password: newPassword
+      });
+      
+      if (error) {
+        throw error;
+      }
+      
+      // Clear form and close dialog
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+      setShowChangePasswordDialog(false);
+      
+      toast.success("Password changed successfully");
+    } catch (error) {
+      console.error("Error changing password:", error);
+      toast.error("Failed to change password. Please make sure your current password is correct.");
+    } finally {
+      setIsChangingPassword(false);
+    }
   };
 
   return (
@@ -262,7 +332,13 @@ const Settings = () => {
                       </p>
                     </div>
                   </div>
-                  <Button variant="outline" className="mt-2">Change Password</Button>
+                  <Button 
+                    variant="outline" 
+                    className="mt-2"
+                    onClick={() => setShowChangePasswordDialog(true)}
+                  >
+                    Change Password
+                  </Button>
                 </div>
                 
                 <div className="space-y-2">
@@ -325,6 +401,64 @@ const Settings = () => {
             </Card>
           </TabsContent>
         </Tabs>
+
+        {/* Change Password Dialog */}
+        <Dialog open={showChangePasswordDialog} onOpenChange={setShowChangePasswordDialog}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Change Password</DialogTitle>
+              <DialogDescription>
+                Enter your current password and a new password to update your credentials.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="current-password">Current Password</Label>
+                <Input
+                  id="current-password"
+                  type="password"
+                  value={currentPassword}
+                  onChange={(e) => setCurrentPassword(e.target.value)}
+                  placeholder="Enter your current password"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="new-password">New Password</Label>
+                <Input
+                  id="new-password"
+                  type="password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  placeholder="Enter your new password"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="confirm-password">Confirm New Password</Label>
+                <Input
+                  id="confirm-password"
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="Confirm your new password"
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => setShowChangePasswordDialog(false)}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleChangePassword}
+                disabled={isChangingPassword}
+              >
+                {isChangingPassword ? "Changing..." : "Change Password"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
         {/* Two-Factor Setup Dialog */}
         <Dialog open={showSetupTwoFactorDialog} onOpenChange={setShowSetupTwoFactorDialog}>

@@ -1,291 +1,295 @@
 
 import { useState, useEffect } from "react";
-import { NavLink, useLocation, useNavigate } from "react-router-dom";
-import { Menu, X, LogIn, User, ChevronDown, CreditCard, PieChart, History, BarChart3, TrendingUp, LogOut, Settings } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
+import { NavLink, Link, useLocation } from "react-router-dom";
+import {
+  Menu,
+  X,
+  Home,
+  User,
+  Settings,
+  LogOut,
+  BarChart3,
+  DollarSign,
+  CreditCard,
+  TrendingUp,
+  LayoutDashboard,
+  PiggyBank,
+} from "lucide-react";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { useAuth } from "@/context/AuthContext";
-import { toast } from "sonner";
-
-// Define types for navigation items
-interface NavItem {
-  label: string;
-  path: string;
-  icon?: React.ReactNode;
-}
+import { useMobile } from "@/hooks/use-mobile";
 
 const Navigation = () => {
-  const [isScrolled, setIsScrolled] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { user, signOut } = useAuth();
+  const isMobile = useMobile();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const location = useLocation();
-  const navigate = useNavigate();
-  const isMobile = useIsMobile();
-  const { user, signOut, isLoading } = useAuth();
-
-  // Check if user is on landing page
-  const isLandingPage = location.pathname === "/";
-  
-  // Handle scroll effects
-  useEffect(() => {
-    const handleScroll = () => {
-      if (window.scrollY > 10) {
-        setIsScrolled(true);
-      } else {
-        setIsScrolled(false);
-      }
-    };
-
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
 
   // Close mobile menu when route changes
   useEffect(() => {
-    setMobileMenuOpen(false);
+    setIsMenuOpen(false);
   }, [location.pathname]);
 
-  const handleSignOut = async () => {
-    try {
-      await signOut();
-      toast.success("Logged out successfully");
-      navigate("/");
-    } catch (error) {
-      console.error("Error signing out:", error);
-      toast.error("Failed to sign out");
+  // Get user's initial for avatar
+  const getUserInitial = () => {
+    if (user?.email) {
+      return user.email.charAt(0).toUpperCase();
     }
+    return "U";
   };
 
-  // Nav items when logged in
-  const authenticatedNavItems: NavItem[] = [
-    { label: "Dashboard", path: "/dashboard", icon: <PieChart className="w-4 h-4" /> },
-    { label: "Transactions", path: "/transactions", icon: <History className="w-4 h-4" /> },
-    { label: "Reports", path: "/reports", icon: <BarChart3 className="w-4 h-4" /> },
-    { label: "Payment Methods", path: "/payment-methods", icon: <CreditCard className="w-4 h-4" /> },
-    { label: "Markets", path: "/markets", icon: <TrendingUp className="w-4 h-4" /> },
+  const mainNavItems = [
+    { to: "/", label: "Home", icon: <Home className="mr-2 h-4 w-4" /> },
+    { to: "/about", label: "About", icon: <BarChart3 className="mr-2 h-4 w-4" /> },
+    { to: "/contact", label: "Contact", icon: <User className="mr-2 h-4 w-4" /> },
   ];
 
-  // Nav items for landing page (when not logged in)
-  const landingNavItems: NavItem[] = [
-    { label: "Features", path: "/#features" },
-    { label: "Pricing", path: "/#pricing" },
-    { label: "About", path: "/about" },
-    { label: "Contact", path: "/contact" },
+  const dashboardNavItems = [
+    { to: "/dashboard", label: "Dashboard", icon: <LayoutDashboard className="mr-2 h-4 w-4" /> },
+    { to: "/transactions", label: "Transactions", icon: <DollarSign className="mr-2 h-4 w-4" /> },
+    { to: "/budget", label: "Budget", icon: <PiggyBank className="mr-2 h-4 w-4" /> },
+    { to: "/markets", label: "Markets", icon: <TrendingUp className="mr-2 h-4 w-4" /> },
+    { to: "/payment-methods", label: "Payments", icon: <CreditCard className="mr-2 h-4 w-4" /> },
   ];
-
-  // Choose which nav items to display based on auth state and current page
-  const displayItems = user ? authenticatedNavItems : (isLandingPage ? landingNavItems : []);
 
   return (
-    <header
-      className={cn(
-        "fixed top-0 w-full z-50 transition-all duration-300",
-        isScrolled
-          ? "bg-background/80 backdrop-blur-md shadow-sm py-3"
-          : "bg-transparent py-5"
-      )}
-    >
-      <div className="container mx-auto px-4 sm:px-6 flex items-center justify-between">
-        {/* Logo */}
-        <NavLink 
-          to="/" 
-          className="text-foreground font-display font-bold text-2xl flex items-center group"
-        >
-          <div className="relative w-8 h-8 mr-2">
-            <div className="absolute inset-0 bg-primary rounded-md rotate-45 group-hover:-rotate-45 transition-transform duration-300"></div>
-            <div className="absolute inset-1 bg-background rounded-sm rotate-45 group-hover:-rotate-45 transition-transform duration-300"></div>
-          </div>
-          Finance<span className="text-primary">Pro</span>
-        </NavLink>
+    <nav className="fixed top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className="container flex h-16 items-center justify-between px-4 sm:px-6">
+        <div className="flex items-center">
+          <Link to="/" className="flex items-center gap-2">
+            <DollarSign className="h-6 w-6 text-primary" />
+            <span className="text-lg font-bold tracking-tight">FinancePro</span>
+          </Link>
+        </div>
 
         {/* Desktop Navigation */}
-        <nav className="hidden md:flex items-center space-x-1">
-          {displayItems.map((item) => (
-            <NavLink
-              key={item.path}
-              to={item.path}
-              className={({ isActive }) =>
-                cn(
-                  "px-3 py-2 rounded-md text-sm font-medium transition-colors relative group flex items-center",
-                  isActive
-                    ? "text-primary"
-                    : "text-foreground/80 hover:text-foreground"
-                )
-              }
-            >
-              {({ isActive }) => (
-                <>
-                  {item.icon && <span className="mr-1.5">{item.icon}</span>}
-                  {item.label}
-                  <span
-                    className={cn(
-                      "absolute bottom-0 left-0 w-full h-0.5 bg-primary transform origin-left transition-transform duration-300",
-                      isActive ? "scale-x-100" : "scale-x-0 group-hover:scale-x-100"
-                    )}
-                  />
-                </>
-              )}
-            </NavLink>
-          ))}
-        </nav>
+        {!isMobile && (
+          <div className="hidden lg:flex lg:items-center lg:space-x-6">
+            {user ? (
+              <>
+                {dashboardNavItems.map((item) => (
+                  <NavLink
+                    key={item.to}
+                    to={item.to}
+                    className={({ isActive }) =>
+                      cn(
+                        "flex items-center text-sm font-medium transition-colors px-3 py-2 rounded-md",
+                        isActive
+                          ? "text-primary bg-primary/10"
+                          : "text-muted-foreground hover:text-primary hover:bg-muted"
+                      )
+                    }
+                  >
+                    {item.icon}
+                    {item.label}
+                  </NavLink>
+                ))}
+              </>
+            ) : (
+              <>
+                {mainNavItems.map((item) => (
+                  <NavLink
+                    key={item.to}
+                    to={item.to}
+                    className={({ isActive }) =>
+                      cn(
+                        "flex items-center text-sm font-medium transition-colors px-3 py-2 rounded-md",
+                        isActive
+                          ? "text-primary bg-primary/10"
+                          : "text-muted-foreground hover:text-primary hover:bg-muted"
+                      )
+                    }
+                  >
+                    {item.icon}
+                    {item.label}
+                  </NavLink>
+                ))}
+              </>
+            )}
+          </div>
+        )}
 
-        {/* Authentication/User Menu */}
-        <div className="hidden md:flex items-center space-x-4">
-          {isLoading ? (
-            <div className="h-9 w-24 rounded-md bg-muted animate-pulse"></div>
-          ) : user ? (
+        {/* Auth Buttons or User Menu */}
+        <div className="flex items-center gap-2">
+          {user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                    <User className="w-4 h-4 text-primary" />
-                  </div>
-                  <span className="hidden sm:inline-block">Account</span>
-                  <ChevronDown className="w-4 h-4" />
+                <Button
+                  variant="ghost"
+                  className="relative h-10 w-10 rounded-full"
+                >
+                  <Avatar className="h-10 w-10">
+                    <AvatarImage src="" alt={user.email || "User"} />
+                    <AvatarFallback>{getUserInitial()}</AvatarFallback>
+                  </Avatar>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuItem disabled className="font-medium opacity-100">
-                  {user.email}
-                </DropdownMenuItem>
+              <DropdownMenuContent className="w-56" align="end" forceMount>
+                <DropdownMenuLabel>My Account</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
-                  <NavLink to="/dashboard" className="cursor-pointer">Dashboard</NavLink>
+                  <Link to="/profile" className="cursor-pointer w-full">
+                    <User className="mr-2 h-4 w-4" />
+                    Profile
+                  </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                  <NavLink to="/transactions" className="cursor-pointer">Transactions</NavLink>
+                  <Link to="/dashboard" className="cursor-pointer w-full">
+                    <LayoutDashboard className="mr-2 h-4 w-4" />
+                    Dashboard
+                  </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                  <NavLink to="/reports" className="cursor-pointer">Reports</NavLink>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <NavLink to="/payment-methods" className="cursor-pointer">Payment Methods</NavLink>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <NavLink to="/profile" className="cursor-pointer">Profile</NavLink>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <NavLink to="/settings" className="cursor-pointer">
-                    <Settings className="w-4 h-4 mr-2" />
+                  <Link to="/settings" className="cursor-pointer w-full">
+                    <Settings className="mr-2 h-4 w-4" />
                     Settings
-                  </NavLink>
+                  </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer text-red-600">
-                  <LogOut className="w-4 h-4 mr-2" />
-                  Log out
+                <DropdownMenuItem
+                  className="cursor-pointer"
+                  onClick={() => signOut()}
+                >
+                  <LogOut className="mr-2 h-4 w-4" />
+                  Logout
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
-            <>
-              <Button variant="ghost" size="sm" asChild>
-                <NavLink to="/login" className="flex items-center gap-1">
-                  <LogIn className="w-4 h-4 mr-1" />
-                  Log in
-                </NavLink>
+            <div className="flex items-center gap-2">
+              <Button variant="ghost" asChild className="hidden sm:flex">
+                <Link to="/login">Login</Link>
               </Button>
-              <Button size="sm" asChild>
-                <NavLink to="/signup">Sign up</NavLink>
+              <Button asChild>
+                <Link to="/signup">Get Started</Link>
               </Button>
-            </>
+            </div>
+          )}
+
+          {/* Mobile Menu Button */}
+          {isMobile && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              className="lg:hidden"
+            >
+              {isMenuOpen ? (
+                <X className="h-6 w-6" />
+              ) : (
+                <Menu className="h-6 w-6" />
+              )}
+              <span className="sr-only">Toggle menu</span>
+            </Button>
           )}
         </div>
-
-        {/* Mobile Menu Toggle */}
-        <button
-          className="md:hidden flex items-center"
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
-        >
-          {mobileMenuOpen ? (
-            <X className="w-6 h-6" />
-          ) : (
-            <Menu className="w-6 h-6" />
-          )}
-        </button>
       </div>
 
       {/* Mobile Menu */}
-      <div
-        className={cn(
-          "fixed inset-0 top-[57px] bg-background z-40 md:hidden transition-all duration-300 ease-in-out",
-          mobileMenuOpen
-            ? "opacity-100 translate-x-0"
-            : "opacity-0 -translate-x-full pointer-events-none"
-        )}
-      >
-        <nav className="container h-full flex flex-col px-4 pt-8 pb-20 overflow-y-auto">
-          <div className="flex flex-col space-y-3">
-            {displayItems.map((item) => (
-              <NavLink
-                key={item.path}
-                to={item.path}
-                className={({ isActive }) =>
-                  cn(
-                    "px-4 py-3 rounded-lg text-base font-medium transition-colors flex items-center",
-                    isActive
-                      ? "bg-primary/10 text-primary"
-                      : "hover:bg-muted"
-                  )
-                }
-              >
-                {item.icon && <span className="mr-2">{item.icon}</span>}
-                {item.label}
-              </NavLink>
-            ))}
-          </div>
-
-          <div className="mt-auto pt-6 flex flex-col space-y-3">
-            {isLoading ? (
-              <div className="h-12 rounded-md bg-muted animate-pulse"></div>
-            ) : user ? (
-              <>
-                <div className="px-4 py-3 rounded-lg bg-muted/50">
-                  <p className="text-sm text-muted-foreground">Signed in as</p>
-                  <p className="font-medium truncate">{user.email}</p>
-                </div>
-                <NavLink to="/profile" className="px-4 py-3 rounded-lg hover:bg-muted flex items-center">
-                  <User className="w-4 h-4 mr-2" />
-                  Profile
-                </NavLink>
-                <NavLink to="/settings" className="px-4 py-3 rounded-lg hover:bg-muted flex items-center">
-                  <Settings className="w-4 h-4 mr-2" />
-                  Settings
-                </NavLink>
-                <Button 
-                  variant="destructive" 
-                  className="w-full justify-start"
-                  onClick={handleSignOut}
-                >
-                  <LogOut className="w-4 h-4 mr-2" />
-                  Log out
-                </Button>
-              </>
-            ) : (
-              <>
-                <Button variant="outline" asChild className="w-full justify-start">
-                  <NavLink to="/login" className="flex items-center">
-                    <LogIn className="w-4 h-4 mr-2" />
-                    Log in
+      {isMobile && isMenuOpen && (
+        <div className="fixed inset-0 top-16 z-50 bg-background animate-in fade-in">
+          <div className="container px-4 py-6 sm:px-6">
+            <nav className="flex flex-col gap-4">
+              {user ? (
+                <>
+                  {dashboardNavItems.map((item) => (
+                    <NavLink
+                      key={item.to}
+                      to={item.to}
+                      className={({ isActive }) =>
+                        cn(
+                          "flex items-center text-base font-medium transition-colors py-3 px-4 rounded-md",
+                          isActive
+                            ? "text-primary bg-primary/10"
+                            : "text-muted-foreground hover:text-primary hover:bg-muted"
+                        )
+                      }
+                    >
+                      {item.icon}
+                      {item.label}
+                    </NavLink>
+                  ))}
+                  <div className="border-t my-2"></div>
+                  <NavLink
+                    to="/profile"
+                    className={({ isActive }) =>
+                      cn(
+                        "flex items-center text-base font-medium transition-colors py-3 px-4 rounded-md",
+                        isActive
+                          ? "text-primary bg-primary/10"
+                          : "text-muted-foreground hover:text-primary hover:bg-muted"
+                      )
+                    }
+                  >
+                    <User className="mr-2 h-4 w-4" />
+                    Profile
                   </NavLink>
-                </Button>
-                <Button asChild className="w-full justify-start">
-                  <NavLink to="/signup">Sign up</NavLink>
-                </Button>
-              </>
-            )}
+                  <NavLink
+                    to="/settings"
+                    className={({ isActive }) =>
+                      cn(
+                        "flex items-center text-base font-medium transition-colors py-3 px-4 rounded-md",
+                        isActive
+                          ? "text-primary bg-primary/10"
+                          : "text-muted-foreground hover:text-primary hover:bg-muted"
+                      )
+                    }
+                  >
+                    <Settings className="mr-2 h-4 w-4" />
+                    Settings
+                  </NavLink>
+                  <Button
+                    variant="ghost"
+                    className="justify-start px-4 py-3 h-auto font-medium"
+                    onClick={() => signOut()}
+                  >
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Logout
+                  </Button>
+                </>
+              ) : (
+                <>
+                  {mainNavItems.map((item) => (
+                    <NavLink
+                      key={item.to}
+                      to={item.to}
+                      className={({ isActive }) =>
+                        cn(
+                          "flex items-center text-base font-medium transition-colors py-3 px-4 rounded-md",
+                          isActive
+                            ? "text-primary bg-primary/10"
+                            : "text-muted-foreground hover:text-primary hover:bg-muted"
+                        )
+                      }
+                    >
+                      {item.icon}
+                      {item.label}
+                    </NavLink>
+                  ))}
+                  <div className="border-t my-2"></div>
+                  <Button variant="default" asChild className="w-full justify-center">
+                    <Link to="/signup">Get Started</Link>
+                  </Button>
+                  <Button variant="outline" asChild className="w-full justify-center">
+                    <Link to="/login">Login</Link>
+                  </Button>
+                </>
+              )}
+            </nav>
           </div>
-        </nav>
-      </div>
-    </header>
+        </div>
+      )}
+    </nav>
   );
 };
 

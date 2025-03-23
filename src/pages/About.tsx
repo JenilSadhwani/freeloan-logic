@@ -16,7 +16,7 @@ const About = () => {
     {
       name: "Jeevesh Mishra",
       role: "Scrum Master",
-      image: "/lovable-uploads/f10a09d0-c131-443d-bc2a-015298c36dfb.png",
+      image: "/lovable-uploads/4576439f-92ac-4cc6-9349-8dba1a364891.png",
       bio: "Technology leader with expertise in building secure financial platforms and scalable cloud architecture."
     },
     {
@@ -28,7 +28,7 @@ const About = () => {
     {
       name: "Dr. Antoni Sophia",
       role: "Guide",
-      image: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=776&q=80",
+      image: "/lovable-uploads/4576439f-92ac-4cc6-9349-8dba1a364891.png",
       bio: "Certified financial planner with deep knowledge of freelancer tax strategies and financial planning."
     }
   ];
