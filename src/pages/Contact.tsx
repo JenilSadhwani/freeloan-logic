@@ -29,8 +29,19 @@ const Contact = () => {
     setIsSubmitting(true);
 
     try {
-      // Simulate form submission
+      // Prepare email data
+      const emailData = {
+        to: "jenil.sadhwani04@gmail.com",
+        from: email,
+        subject: `Contact Form: ${subject}`,
+        text: `Name: ${name}\nEmail: ${email}\nSubject: ${subject}\nMessage: ${message}`,
+      };
+
+      // Just simulate sending email in this demo
+      // In a real app, you would send this data to a server endpoint
       await new Promise((resolve) => setTimeout(resolve, 1000));
+      
+      console.log("Email would be sent with data:", emailData);
       setIsSubmitted(true);
       toast.success("Message sent successfully!");
       
@@ -188,7 +199,7 @@ const Contact = () => {
                       <div>
                         <h3 className="font-medium mb-1">Email Us</h3>
                         <p className="text-muted-foreground text-sm mb-2">For general inquiries and support</p>
-                        <a href="mailto:hello@financepro.example.com" className="text-primary hover:underline font-medium">
+                        <a href="mailto:jenil.sadhwani04@gmail.com" className="text-primary hover:underline font-medium">
                           jenil.sadhwani04@gmail.com
                         </a>
                       </div>
@@ -261,19 +272,6 @@ const Contact = () => {
                   </div>
                 </div>
               </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Map Section */}
-        <section className="py-12">
-          <div className="container px-4 sm:px-6 mx-auto">
-            <div className="rounded-xl overflow-hidden shadow-lg border border-border h-[400px] w-full">
-              <img 
-                src="https://placehold.co/1200x400/f8fafc/94a3b8?text=Map" 
-                alt="Office Location Map" 
-                className="w-full h-full object-cover"
-              />
             </div>
           </div>
         </section>

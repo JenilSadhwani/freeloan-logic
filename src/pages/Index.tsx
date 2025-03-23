@@ -137,13 +137,30 @@ const Index = () => {
             </div>
 
             <div className="mt-16 sm:mt-24 relative mx-auto max-w-5xl animate-fade-in animation-delay-500">
-              <div className="absolute inset-0 -z-10 bg-primary/5 rounded-2xl shadow-xl blur-xl" />
-              <div className="glass rounded-xl shadow-2xl overflow-hidden">
-                <img 
-                  src="/dashboard-preview.png" 
-                  alt="FinancePro Dashboard" 
-                  className="w-full h-auto object-cover" 
-                />
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div className="bg-card p-8 rounded-xl border border-border shadow transition-all hover:shadow-md">
+                  <div className="mb-4 p-3 rounded-lg bg-primary/10 w-fit">
+                    <LineChart className="h-8 w-8 text-primary" />
+                  </div>
+                  <h3 className="text-xl font-medium mb-2">Real-time Tracking</h3>
+                  <p className="text-muted-foreground">Monitor your financial performance in real-time with live updates and intuitive dashboards.</p>
+                </div>
+                
+                <div className="bg-card p-8 rounded-xl border border-border shadow transition-all hover:shadow-md">
+                  <div className="mb-4 p-3 rounded-lg bg-primary/10 w-fit">
+                    <BarChart4 className="h-8 w-8 text-primary" />
+                  </div>
+                  <h3 className="text-xl font-medium mb-2">Smart Analytics</h3>
+                  <p className="text-muted-foreground">Gain valuable insights with AI-powered analytics that help you optimize your financial decisions.</p>
+                </div>
+                
+                <div className="bg-card p-8 rounded-xl border border-border shadow transition-all hover:shadow-md">
+                  <div className="mb-4 p-3 rounded-lg bg-primary/10 w-fit">
+                    <ShieldCheck className="h-8 w-8 text-primary" />
+                  </div>
+                  <h3 className="text-xl font-medium mb-2">Secure & Private</h3>
+                  <p className="text-muted-foreground">Your financial data is protected with bank-level encryption and strict privacy controls.</p>
+                </div>
               </div>
             </div>
           </div>
