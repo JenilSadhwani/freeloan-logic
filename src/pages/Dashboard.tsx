@@ -1,4 +1,3 @@
-
 // Updated Dashboard with Supabase Integration
 import { useState, useEffect } from "react";
 import {
@@ -13,6 +12,7 @@ import {
   Plus,
   TrendingUp,
   Users,
+  RefreshCw,
 } from "lucide-react";
 import {
   Card,
@@ -49,6 +49,7 @@ const Dashboard = () => {
   const [activeTab, setActiveTab] = useState("overview");
   const [currentBalance, setCurrentBalance] = useState(0);
   const [isUpdatingBalance, setIsUpdatingBalance] = useState(false);
+  const [autoUpdateEnabled, setAutoUpdateEnabled] = useState(true);
 
   useEffect(() => {
     const fetchTransactions = async () => {
@@ -85,6 +86,12 @@ const Dashboard = () => {
     fetchCurrentBalance();
   }, [user]);
 
+  useEffect(() => {
+    if (autoUpdateEnabled && user && transactions.length > 0) {
+      updateBalanceWithProfit();
+    }
+  }, [transactions, autoUpdateEnabled, user]);
+
   const totalIncome = transactions.filter(t => t.type === "income").reduce((sum, t) => sum + t.amount, 0);
   const totalExpenses = transactions.filter(t => t.type === "expense").reduce((sum, t) => sum + t.amount, 0);
   const netProfit = totalIncome - totalExpenses;
@@ -96,7 +103,7 @@ const Dashboard = () => {
     
     setIsUpdatingBalance(true);
     
-    const newBalance = currentBalance + netProfit;
+    const newBalance = totalIncome - totalExpenses;
     
     const { error } = await supabase
       .from("profiles")
@@ -112,6 +119,14 @@ const Dashboard = () => {
     }
     
     setIsUpdatingBalance(false);
+  };
+
+  const toggleAutoUpdate = () => {
+    setAutoUpdateEnabled(!autoUpdateEnabled);
+    toast.success(autoUpdateEnabled 
+      ? "Auto-update disabled. You can manually update the balance." 
+      : "Auto-update enabled. Balance will update automatically."
+    );
   };
 
   const recentTransactions = transactions.slice(0, 5);
@@ -151,6 +166,15 @@ const Dashboard = () => {
               <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
               <p className="text-muted-foreground">Your financial overview at a glance.</p>
             </div>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="flex items-center gap-2"
+              onClick={toggleAutoUpdate}
+            >
+              <RefreshCw className="h-4 w-4" />
+              {autoUpdateEnabled ? "Auto-update On" : "Auto-update Off"}
+            </Button>
           </div>
 
           <Tabs defaultValue="overview" value={activeTab} onValueChange={setActiveTab} className="space-y-6">
@@ -166,16 +190,23 @@ const Dashboard = () => {
                     <CardDescription>Current Balance</CardDescription>
                     <CardTitle className="text-2xl font-bold flex items-center">
                       ${currentBalance.toLocaleString()}
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        className="ml-2 h-6 text-xs" 
-                        onClick={updateBalanceWithProfit}
-                        disabled={isUpdatingBalance}
-                      >
-                        <Plus className="h-3 w-3 mr-1" /> Add Profit
-                      </Button>
+                      {!autoUpdateEnabled && (
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          className="ml-2 h-6 text-xs" 
+                          onClick={updateBalanceWithProfit}
+                          disabled={isUpdatingBalance}
+                        >
+                          <RefreshCw className="h-3 w-3 mr-1" /> Update
+                        </Button>
+                      )}
                     </CardTitle>
+                    <p className="text-xs text-muted-foreground">
+                      {autoUpdateEnabled 
+                        ? "Balance updates automatically" 
+                        : "Manual balance updates enabled"}
+                    </p>
                   </CardHeader>
                 </Card>
 
@@ -220,7 +251,6 @@ const Dashboard = () => {
                 </Card>
               </div>
 
-              {/* Chart */}
               <div className="grid grid-cols-1 lg:grid-cols-7 gap-6">
                 <Card className="lg:col-span-4">
                   <CardHeader>
@@ -275,7 +305,6 @@ const Dashboard = () => {
                 </Card>
               </div>
 
-              {/* Recent Transactions */}
               <Card>
                 <CardHeader>
                   <CardTitle>Recent Transactions</CardTitle>

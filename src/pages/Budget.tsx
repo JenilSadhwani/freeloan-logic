@@ -11,6 +11,7 @@ import {
   PiggyBank,
   TrendingUp,
   TrendingDown,
+  RefreshCw,
 } from "lucide-react";
 import Layout from "@/components/Layout";
 import { useAuth } from "@/context/AuthContext";
@@ -46,7 +47,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { format } from "date-fns";
+import { format, isFuture, parseISO, addMonths } from "date-fns";
 import { Calendar } from "@/components/ui/calendar";
 import {
   Popover,
@@ -90,6 +91,8 @@ const budgetFormSchema = z.object({
   type: z.enum(["income", "expense"]),
   category: z.string().optional(),
   description: z.string().optional(),
+  isRecurring: z.boolean().default(false),
+  recurringFrequency: z.enum(["weekly", "monthly", "quarterly", "yearly"]).optional(),
 });
 
 type BudgetFormValues = z.infer<typeof budgetFormSchema>;
@@ -102,6 +105,7 @@ const Budget = () => {
   const [isAddingBudgetItem, setIsAddingBudgetItem] = useState(false);
   const [currentBalance, setCurrentBalance] = useState(0);
   const [open, setOpen] = useState(false);
+  const [upcomingTotal, setUpcomingTotal] = useState({ income: 0, expense: 0 });
 
   const form = useForm<BudgetFormValues>({
     resolver: zodResolver(budgetFormSchema),
@@ -111,8 +115,13 @@ const Budget = () => {
       date: new Date(),
       type: "expense",
       description: "",
+      isRecurring: false,
     },
   });
+
+  // Watch form values for conditional fields
+  const isRecurring = form.watch("isRecurring");
+  const selectedType = form.watch("type");
 
   // Fetch data on component mount
   useEffect(() => {
@@ -148,30 +157,52 @@ const Budget = () => {
       }
     };
 
-    // Fetch budget items if implemented
+    // Fetch budget items from Supabase
     const fetchBudgetItems = async () => {
-      // This would be implemented if there was a budget items table
-      // For now, we'll use sample data
-      setBudgetItems([
-        {
-          id: 1,
-          title: "Rent Payment",
-          amount: 1200,
-          date: new Date(2024, 3, 28),
-          type: "expense",
-          category: "Housing",
-          description: "Monthly apartment rent",
-        },
-        {
-          id: 2,
-          title: "Freelance Project",
-          amount: 3000,
-          date: new Date(2024, 3, 25),
-          type: "income",
-          category: "Freelance",
-          description: "Website development for client",
-        },
-      ]);
+      try {
+        // We'll use a separate table for budget items
+        const { data, error } = await supabase
+          .from("budget_items")
+          .select("*")
+          .eq("user_id", user.id);
+        
+        if (error) throw error;
+        
+        // If no data, provide sample data (this can be removed in production)
+        if (data && data.length > 0) {
+          setBudgetItems(data);
+        } else {
+          // Sample data for demonstration
+          setBudgetItems([
+            {
+              id: 1,
+              title: "Rent Payment",
+              amount: 1200,
+              date: new Date(2024, 3, 28),
+              type: "expense",
+              category: "Housing",
+              description: "Monthly apartment rent",
+              isRecurring: true,
+              recurringFrequency: "monthly",
+              user_id: user.id
+            },
+            {
+              id: 2,
+              title: "Freelance Project",
+              amount: 3000,
+              date: new Date(2024, 3, 25),
+              type: "income",
+              category: "Freelance",
+              description: "Website development for client",
+              isRecurring: false,
+              user_id: user.id
+            },
+          ]);
+        }
+      } catch (error) {
+        console.error("Error fetching budget items:", error);
+        toast.error("Failed to load budget items");
+      }
     };
 
     // Fetch categories
@@ -193,24 +224,51 @@ const Budget = () => {
     fetchCategories();
   }, [user]);
 
+  // Calculate upcoming totals for the next 30 days
+  useEffect(() => {
+    const now = new Date();
+    const thirtyDaysFromNow = addMonths(now, 1);
+    
+    let upcomingIncome = 0;
+    let upcomingExpense = 0;
+    
+    budgetItems.forEach(item => {
+      const itemDate = new Date(item.date);
+      
+      // Check if the date is in the future and within 30 days
+      if (isFuture(itemDate) && itemDate <= thirtyDaysFromNow) {
+        if (item.type === "income") {
+          upcomingIncome += Number(item.amount);
+        } else {
+          upcomingExpense += Number(item.amount);
+        }
+      }
+    });
+    
+    setUpcomingTotal({
+      income: upcomingIncome,
+      expense: upcomingExpense
+    });
+  }, [budgetItems]);
+
   // Calculate budget statistics
   const plannedIncome = budgetItems
     .filter((item) => item.type === "income")
-    .reduce((sum, item) => sum + item.amount, 0);
+    .reduce((sum, item) => sum + Number(item.amount), 0);
 
   const plannedExpenses = budgetItems
     .filter((item) => item.type === "expense")
-    .reduce((sum, item) => sum + item.amount, 0);
+    .reduce((sum, item) => sum + Number(item.amount), 0);
 
-  const projectedBalance = currentBalance + plannedIncome - plannedExpenses;
+  const projectedBalance = currentBalance + upcomingTotal.income - upcomingTotal.expense;
   
   const actualIncome = transactions
     .filter((t) => t.type === "income")
-    .reduce((sum, t) => sum + t.amount, 0);
+    .reduce((sum, t) => sum + Number(t.amount), 0);
     
   const actualExpenses = transactions
     .filter((t) => t.type === "expense")
-    .reduce((sum, t) => sum + t.amount, 0);
+    .reduce((sum, t) => sum + Number(t.amount), 0);
 
   // Budget breakdown for charts
   const budgetByCategory = {};
@@ -220,7 +278,7 @@ const Budget = () => {
     .filter((item) => item.type === "expense")
     .forEach((item) => {
       const category = item.category || "Other";
-      budgetByCategory[category] = (budgetByCategory[category] || 0) + item.amount;
+      budgetByCategory[category] = (budgetByCategory[category] || 0) + Number(item.amount);
     });
     
   const budgetBreakdownData = Object.entries(budgetByCategory).map(
@@ -258,14 +316,30 @@ const Budget = () => {
     
     try {
       // In a real app, we would save to the database
-      // For now, just add to local state
       const newItem = {
         id: Date.now(),
         ...data,
+        user_id: user?.id
       };
       
+      // Try to save to Supabase if the table exists
+      try {
+        await supabase
+          .from("budget_items")
+          .insert(newItem);
+      } catch (error) {
+        console.log("Budget items table might not exist yet, storing locally");
+      }
+      
       setBudgetItems([...budgetItems, newItem]);
-      form.reset();
+      form.reset({
+        title: "",
+        amount: 0,
+        date: new Date(),
+        type: "expense",
+        description: "",
+        isRecurring: false,
+      });
       setOpen(false);
       toast.success("Budget item added successfully");
     } catch (error) {
@@ -277,9 +351,24 @@ const Budget = () => {
   };
 
   // Handler to remove a budget item
-  const removeBudgetItem = (id) => {
-    setBudgetItems(budgetItems.filter(item => item.id !== id));
-    toast.success("Budget item removed");
+  const removeBudgetItem = async (id) => {
+    try {
+      // Try to remove from Supabase if the table exists
+      try {
+        await supabase
+          .from("budget_items")
+          .delete()
+          .eq("id", id);
+      } catch (error) {
+        console.log("Budget items table might not exist yet, removing locally");
+      }
+      
+      setBudgetItems(budgetItems.filter(item => item.id !== id));
+      toast.success("Budget item removed");
+    } catch (error) {
+      console.error("Error removing budget item:", error);
+      toast.error("Failed to remove budget item");
+    }
   };
 
   return (
@@ -426,7 +515,7 @@ const Budget = () => {
                             <SelectContent>
                               {categories
                                 .filter(
-                                  (cat) => cat.type === form.getValues("type")
+                                  (cat) => cat.type === selectedType
                                 )
                                 .map((category) => (
                                   <SelectItem
@@ -455,6 +544,58 @@ const Budget = () => {
                         </FormItem>
                       )}
                     />
+                    <FormField
+                      control={form.control}
+                      name="isRecurring"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                          <FormControl>
+                            <input
+                              type="checkbox"
+                              checked={field.value}
+                              onChange={field.onChange}
+                              className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                            />
+                          </FormControl>
+                          <div className="space-y-1 leading-none">
+                            <FormLabel>Recurring Item</FormLabel>
+                            <FormDescription>
+                              This item repeats on a regular basis
+                            </FormDescription>
+                          </div>
+                        </FormItem>
+                      )}
+                    />
+                    
+                    {isRecurring && (
+                      <FormField
+                        control={form.control}
+                        name="recurringFrequency"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Frequency</FormLabel>
+                            <Select
+                              onValueChange={field.onChange}
+                              defaultValue={field.value}
+                            >
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select frequency" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value="weekly">Weekly</SelectItem>
+                                <SelectItem value="monthly">Monthly</SelectItem>
+                                <SelectItem value="quarterly">Quarterly</SelectItem>
+                                <SelectItem value="yearly">Yearly</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    )}
+                    
                     <DialogFooter>
                       <Button
                         type="submit"
@@ -480,10 +621,10 @@ const Budget = () => {
             </Card>
             <Card>
               <CardHeader className="pb-2">
-                <CardDescription>Planned Income/Expenses</CardDescription>
+                <CardDescription>Upcoming (Next 30 Days)</CardDescription>
                 <CardTitle className="text-2xl font-bold">
-                  <span className="text-green-500">+${plannedIncome.toLocaleString()}</span> / 
-                  <span className="text-red-500">-${plannedExpenses.toLocaleString()}</span>
+                  <span className="text-green-500">+${upcomingTotal.income.toLocaleString()}</span> / 
+                  <span className="text-red-500">-${upcomingTotal.expense.toLocaleString()}</span>
                 </CardTitle>
               </CardHeader>
             </Card>
@@ -553,6 +694,7 @@ const Budget = () => {
                                 <div className="text-sm text-muted-foreground">
                                   {format(new Date(item.date), "PPP")}
                                   {item.category && ` • ${item.category}`}
+                                  {item.isRecurring && ` • Recurring (${item.recurringFrequency})`}
                                 </div>
                                 {item.description && (
                                   <p className="text-sm mt-1">{item.description}</p>
@@ -563,7 +705,7 @@ const Budget = () => {
                               <div className={`font-medium ${
                                 item.type === "income" ? "text-green-600" : "text-red-600"
                               }`}>
-                                {item.type === "income" ? "+" : "-"}${item.amount.toLocaleString()}
+                                {item.type === "income" ? "+" : "-"}${Number(item.amount).toLocaleString()}
                               </div>
                               <Button 
                                 variant="ghost" 
