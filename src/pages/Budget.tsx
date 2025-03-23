@@ -97,10 +97,26 @@ const budgetFormSchema = z.object({
 
 type BudgetFormValues = z.infer<typeof budgetFormSchema>;
 
+// Define the budget item interface to match our database schema
+interface BudgetItem {
+  id: string;
+  user_id: string;
+  title: string;
+  amount: number;
+  date: string;
+  type: "income" | "expense";
+  category?: string;
+  description?: string;
+  is_recurring: boolean;
+  recurring_frequency?: "weekly" | "monthly" | "quarterly" | "yearly";
+  created_at?: string;
+  updated_at?: string;
+}
+
 const Budget = () => {
   const { user } = useAuth();
   const [transactions, setTransactions] = useState([]);
-  const [budgetItems, setBudgetItems] = useState([]);
+  const [budgetItems, setBudgetItems] = useState<BudgetItem[]>([]);
   const [categories, setCategories] = useState([]);
   const [isAddingBudgetItem, setIsAddingBudgetItem] = useState(false);
   const [currentBalance, setCurrentBalance] = useState(0);
@@ -160,7 +176,6 @@ const Budget = () => {
     // Fetch budget items from Supabase
     const fetchBudgetItems = async () => {
       try {
-        // We'll use a separate table for budget items
         const { data, error } = await supabase
           .from("budget_items")
           .select("*")
@@ -168,36 +183,8 @@ const Budget = () => {
         
         if (error) throw error;
         
-        // If no data, provide sample data (this can be removed in production)
         if (data && data.length > 0) {
           setBudgetItems(data);
-        } else {
-          // Sample data for demonstration
-          setBudgetItems([
-            {
-              id: 1,
-              title: "Rent Payment",
-              amount: 1200,
-              date: new Date(2024, 3, 28),
-              type: "expense",
-              category: "Housing",
-              description: "Monthly apartment rent",
-              isRecurring: true,
-              recurringFrequency: "monthly",
-              user_id: user.id
-            },
-            {
-              id: 2,
-              title: "Freelance Project",
-              amount: 3000,
-              date: new Date(2024, 3, 25),
-              type: "income",
-              category: "Freelance",
-              description: "Website development for client",
-              isRecurring: false,
-              user_id: user.id
-            },
-          ]);
         }
       } catch (error) {
         console.error("Error fetching budget items:", error);
@@ -315,23 +302,32 @@ const Budget = () => {
     setIsAddingBudgetItem(true);
     
     try {
-      // In a real app, we would save to the database
+      // Prepare the data for insertion into the database
       const newItem = {
-        id: Date.now(),
-        ...data,
-        user_id: user?.id
+        user_id: user?.id,
+        title: data.title,
+        amount: data.amount,
+        date: data.date,
+        type: data.type,
+        category: data.category,
+        description: data.description,
+        is_recurring: data.isRecurring,
+        recurring_frequency: data.isRecurring ? data.recurringFrequency : null
       };
       
-      // Try to save to Supabase if the table exists
-      try {
-        await supabase
-          .from("budget_items")
-          .insert(newItem);
-      } catch (error) {
-        console.log("Budget items table might not exist yet, storing locally");
+      // Save to Supabase
+      const { data: insertedData, error } = await supabase
+        .from("budget_items")
+        .insert(newItem)
+        .select();
+      
+      if (error) throw error;
+      
+      // Add the new item to the local state
+      if (insertedData && insertedData.length > 0) {
+        setBudgetItems([...budgetItems, insertedData[0]]);
       }
       
-      setBudgetItems([...budgetItems, newItem]);
       form.reset({
         title: "",
         amount: 0,
@@ -340,6 +336,7 @@ const Budget = () => {
         description: "",
         isRecurring: false,
       });
+      
       setOpen(false);
       toast.success("Budget item added successfully");
     } catch (error) {
@@ -353,15 +350,12 @@ const Budget = () => {
   // Handler to remove a budget item
   const removeBudgetItem = async (id) => {
     try {
-      // Try to remove from Supabase if the table exists
-      try {
-        await supabase
-          .from("budget_items")
-          .delete()
-          .eq("id", id);
-      } catch (error) {
-        console.log("Budget items table might not exist yet, removing locally");
-      }
+      const { error } = await supabase
+        .from("budget_items")
+        .delete()
+        .eq("id", id);
+      
+      if (error) throw error;
       
       setBudgetItems(budgetItems.filter(item => item.id !== id));
       toast.success("Budget item removed");
@@ -694,7 +688,7 @@ const Budget = () => {
                                 <div className="text-sm text-muted-foreground">
                                   {format(new Date(item.date), "PPP")}
                                   {item.category && ` • ${item.category}`}
-                                  {item.isRecurring && ` • Recurring (${item.recurringFrequency})`}
+                                  {item.is_recurring && ` • Recurring (${item.recurring_frequency})`}
                                 </div>
                                 {item.description && (
                                   <p className="text-sm mt-1">{item.description}</p>
