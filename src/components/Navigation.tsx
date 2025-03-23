@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { NavLink, Link, useLocation } from "react-router-dom";
 import {
@@ -211,7 +212,7 @@ const Navigation = () => {
                       {item.icon}
                       {item.label}
                     </NavLink>
-                  )}
+                  ))}
                   <div className="border-t my-2"></div>
                   <NavLink
                     to="/profile"
