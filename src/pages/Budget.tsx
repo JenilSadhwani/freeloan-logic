@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import {
   Wallet,
@@ -79,7 +78,6 @@ import {
   Cell,
 } from "recharts";
 
-// Define schema for budget entries
 const budgetFormSchema = z.object({
   title: z.string().min(2, {
     message: "Title must be at least 2 characters.",
@@ -97,7 +95,6 @@ const budgetFormSchema = z.object({
 
 type BudgetFormValues = z.infer<typeof budgetFormSchema>;
 
-// Define the budget item interface to match our database schema
 interface BudgetItem {
   id: string;
   user_id: string;
@@ -105,10 +102,10 @@ interface BudgetItem {
   amount: number;
   date: string;
   type: "income" | "expense";
-  category?: string;
-  description?: string;
+  category?: string | null;
+  description?: string | null;
   is_recurring: boolean;
-  recurring_frequency?: "weekly" | "monthly" | "quarterly" | "yearly";
+  recurring_frequency?: "weekly" | "monthly" | "quarterly" | "yearly" | null;
   created_at?: string;
   updated_at?: string;
 }
@@ -135,15 +132,12 @@ const Budget = () => {
     },
   });
 
-  // Watch form values for conditional fields
   const isRecurring = form.watch("isRecurring");
   const selectedType = form.watch("type");
 
-  // Fetch data on component mount
   useEffect(() => {
     if (!user) return;
 
-    // Fetch user's current balance
     const fetchBalance = async () => {
       const { data, error } = await supabase
         .from("profiles")
@@ -156,7 +150,6 @@ const Budget = () => {
       }
     };
 
-    // Fetch all transactions
     const fetchTransactions = async () => {
       const { data, error } = await supabase
         .from("transactions")
@@ -173,7 +166,6 @@ const Budget = () => {
       }
     };
 
-    // Fetch budget items from Supabase
     const fetchBudgetItems = async () => {
       try {
         const { data, error } = await supabase
@@ -184,7 +176,7 @@ const Budget = () => {
         if (error) throw error;
         
         if (data && data.length > 0) {
-          setBudgetItems(data);
+          setBudgetItems(data as BudgetItem[]);
         }
       } catch (error) {
         console.error("Error fetching budget items:", error);
@@ -192,7 +184,6 @@ const Budget = () => {
       }
     };
 
-    // Fetch categories
     const fetchCategories = async () => {
       const { data, error } = await supabase
         .from("categories")
@@ -211,7 +202,6 @@ const Budget = () => {
     fetchCategories();
   }, [user]);
 
-  // Calculate upcoming totals for the next 30 days
   useEffect(() => {
     const now = new Date();
     const thirtyDaysFromNow = addMonths(now, 1);
@@ -222,7 +212,6 @@ const Budget = () => {
     budgetItems.forEach(item => {
       const itemDate = new Date(item.date);
       
-      // Check if the date is in the future and within 30 days
       if (isFuture(itemDate) && itemDate <= thirtyDaysFromNow) {
         if (item.type === "income") {
           upcomingIncome += Number(item.amount);
@@ -238,7 +227,6 @@ const Budget = () => {
     });
   }, [budgetItems]);
 
-  // Calculate budget statistics
   const plannedIncome = budgetItems
     .filter((item) => item.type === "income")
     .reduce((sum, item) => sum + Number(item.amount), 0);
@@ -257,10 +245,8 @@ const Budget = () => {
     .filter((t) => t.type === "expense")
     .reduce((sum, t) => sum + Number(t.amount), 0);
 
-  // Budget breakdown for charts
   const budgetByCategory = {};
   
-  // Group planned expenses by category
   budgetItems
     .filter((item) => item.type === "expense")
     .forEach((item) => {
@@ -275,10 +261,8 @@ const Budget = () => {
     })
   );
   
-  // Colors for pie chart
   const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884D8", "#82ca9d"];
 
-  // Comparison chart data
   const comparisonData = [
     {
       name: "Income",
@@ -297,25 +281,22 @@ const Budget = () => {
     },
   ];
 
-  // Form submission handler
   const onSubmit = async (data: BudgetFormValues) => {
     setIsAddingBudgetItem(true);
     
     try {
-      // Prepare the data for insertion into the database
       const newItem = {
         user_id: user?.id,
         title: data.title,
         amount: data.amount,
-        date: data.date,
+        date: data.date.toISOString().split('T')[0],
         type: data.type,
-        category: data.category,
-        description: data.description,
+        category: data.category || null,
+        description: data.description || null,
         is_recurring: data.isRecurring,
         recurring_frequency: data.isRecurring ? data.recurringFrequency : null
       };
       
-      // Save to Supabase
       const { data: insertedData, error } = await supabase
         .from("budget_items")
         .insert(newItem)
@@ -323,9 +304,8 @@ const Budget = () => {
       
       if (error) throw error;
       
-      // Add the new item to the local state
       if (insertedData && insertedData.length > 0) {
-        setBudgetItems([...budgetItems, insertedData[0]]);
+        setBudgetItems([...budgetItems, insertedData[0] as BudgetItem]);
       }
       
       form.reset({
@@ -347,7 +327,6 @@ const Budget = () => {
     }
   };
 
-  // Handler to remove a budget item
   const removeBudgetItem = async (id) => {
     try {
       const { error } = await supabase
