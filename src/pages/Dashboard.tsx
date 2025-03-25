@@ -14,7 +14,7 @@ import {
   RefreshCw,
   FileText,
   Calculator,
-  ReceiptIndian,
+  Receipt,
 } from "lucide-react";
 import {
   Card,
@@ -49,68 +49,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
-const calculateIndianIncomeTax = (income: number): { tax: number; breakdown: { slab: string; amount: number }[] } => {
-  let tax = 0;
-  const breakdown: { slab: string; amount: number }[] = [];
-
-  if (income <= 300000) {
-    tax = 0;
-    breakdown.push({ slab: "Up to ₹3,00,000", amount: 0 });
-  } else if (income <= 600000) {
-    const taxableAmount = income - 300000;
-    const slabTax = taxableAmount * 0.05;
-    tax = slabTax;
-    breakdown.push({ slab: "Up to ₹3,00,000", amount: 0 });
-    breakdown.push({ slab: "₹3,00,001 to ₹6,00,000 (5%)", amount: slabTax });
-  } else if (income <= 900000) {
-    const slabTax1 = 300000 * 0.05;
-    const slabTax2 = (income - 600000) * 0.1;
-    tax = slabTax1 + slabTax2;
-    breakdown.push({ slab: "Up to ₹3,00,000", amount: 0 });
-    breakdown.push({ slab: "₹3,00,001 to ₹6,00,000 (5%)", amount: slabTax1 });
-    breakdown.push({ slab: "₹6,00,001 to ₹9,00,000 (10%)", amount: slabTax2 });
-  } else if (income <= 1200000) {
-    const slabTax1 = 300000 * 0.05;
-    const slabTax2 = 300000 * 0.1;
-    const slabTax3 = (income - 900000) * 0.15;
-    tax = slabTax1 + slabTax2 + slabTax3;
-    breakdown.push({ slab: "Up to ₹3,00,000", amount: 0 });
-    breakdown.push({ slab: "₹3,00,001 to ₹6,00,000 (5%)", amount: slabTax1 });
-    breakdown.push({ slab: "₹6,00,001 to ₹9,00,000 (10%)", amount: slabTax2 });
-    breakdown.push({ slab: "₹9,00,001 to ₹12,00,000 (15%)", amount: slabTax3 });
-  } else if (income <= 1500000) {
-    const slabTax1 = 300000 * 0.05;
-    const slabTax2 = 300000 * 0.1;
-    const slabTax3 = 300000 * 0.15;
-    const slabTax4 = (income - 1200000) * 0.2;
-    tax = slabTax1 + slabTax2 + slabTax3 + slabTax4;
-    breakdown.push({ slab: "Up to ₹3,00,000", amount: 0 });
-    breakdown.push({ slab: "₹3,00,001 to ₹6,00,000 (5%)", amount: slabTax1 });
-    breakdown.push({ slab: "₹6,00,001 to ₹9,00,000 (10%)", amount: slabTax2 });
-    breakdown.push({ slab: "₹9,00,001 to ₹12,00,000 (15%)", amount: slabTax3 });
-    breakdown.push({ slab: "₹12,00,001 to ₹15,00,000 (20%)", amount: slabTax4 });
-  } else {
-    const slabTax1 = 300000 * 0.05;
-    const slabTax2 = 300000 * 0.1;
-    const slabTax3 = 300000 * 0.15;
-    const slabTax4 = 300000 * 0.2;
-    const slabTax5 = (income - 1500000) * 0.3;
-    tax = slabTax1 + slabTax2 + slabTax3 + slabTax4 + slabTax5;
-    breakdown.push({ slab: "Up to ₹3,00,000", amount: 0 });
-    breakdown.push({ slab: "₹3,00,001 to ₹6,00,000 (5%)", amount: slabTax1 });
-    breakdown.push({ slab: "₹6,00,001 to ₹9,00,000 (10%)", amount: slabTax2 });
-    breakdown.push({ slab: "₹9,00,001 to ₹12,00,000 (15%)", amount: slabTax3 });
-    breakdown.push({ slab: "₹12,00,001 to ₹15,00,000 (20%)", amount: slabTax4 });
-    breakdown.push({ slab: "Above ₹15,00,000 (30%)", amount: slabTax5 });
-  }
-
-  const cess = tax * 0.04;
-  tax += cess;
-  breakdown.push({ slab: "Health and Education Cess (4%)", amount: cess });
-
-  return { tax, breakdown };
-};
-
 const Dashboard = () => {
   const [transactions, setTransactions] = useState([]);
   const { user } = useAuth();
@@ -124,6 +62,74 @@ const Dashboard = () => {
     tax: number; 
     breakdown: { slab: string; amount: number }[] 
   } | null>(null);
+
+  const totalIncome = transactions.filter(t => t.type === "income").reduce((sum, t) => sum + t.amount, 0);
+  const totalExpenses = transactions.filter(t => t.type === "expense").reduce((sum, t) => sum + t.amount, 0);
+  const netProfit = totalIncome - totalExpenses;
+  const profitPercentage = totalIncome ? ((netProfit / totalIncome) * 100).toFixed(1) : "0";
+  const isProfit = netProfit >= 0;
+
+  const calculateIndianIncomeTax = (income: number): { tax: number; breakdown: { slab: string; amount: number }[] } => {
+    let tax = 0;
+    const breakdown: { slab: string; amount: number }[] = [];
+
+    if (income <= 300000) {
+      tax = 0;
+      breakdown.push({ slab: "Up to ₹3,00,000", amount: 0 });
+    } else if (income <= 600000) {
+      const taxableAmount = income - 300000;
+      const slabTax = taxableAmount * 0.05;
+      tax = slabTax;
+      breakdown.push({ slab: "Up to ₹3,00,000", amount: 0 });
+      breakdown.push({ slab: "₹3,00,001 to ₹6,00,000 (5%)", amount: slabTax });
+    } else if (income <= 900000) {
+      const slabTax1 = 300000 * 0.05;
+      const slabTax2 = (income - 600000) * 0.1;
+      tax = slabTax1 + slabTax2;
+      breakdown.push({ slab: "Up to ₹3,00,000", amount: 0 });
+      breakdown.push({ slab: "₹3,00,001 to ₹6,00,000 (5%)", amount: slabTax1 });
+      breakdown.push({ slab: "₹6,00,001 to ₹9,00,000 (10%)", amount: slabTax2 });
+    } else if (income <= 1200000) {
+      const slabTax1 = 300000 * 0.05;
+      const slabTax2 = 300000 * 0.1;
+      const slabTax3 = (income - 900000) * 0.15;
+      tax = slabTax1 + slabTax2 + slabTax3;
+      breakdown.push({ slab: "Up to ₹3,00,000", amount: 0 });
+      breakdown.push({ slab: "₹3,00,001 to ₹6,00,000 (5%)", amount: slabTax1 });
+      breakdown.push({ slab: "₹6,00,001 to ₹9,00,000 (10%)", amount: slabTax2 });
+      breakdown.push({ slab: "₹9,00,001 to ₹12,00,000 (15%)", amount: slabTax3 });
+    } else if (income <= 1500000) {
+      const slabTax1 = 300000 * 0.05;
+      const slabTax2 = 300000 * 0.1;
+      const slabTax3 = 300000 * 0.15;
+      const slabTax4 = (income - 1200000) * 0.2;
+      tax = slabTax1 + slabTax2 + slabTax3 + slabTax4;
+      breakdown.push({ slab: "Up to ₹3,00,000", amount: 0 });
+      breakdown.push({ slab: "₹3,00,001 to ₹6,00,000 (5%)", amount: slabTax1 });
+      breakdown.push({ slab: "₹6,00,001 to ₹9,00,000 (10%)", amount: slabTax2 });
+      breakdown.push({ slab: "₹9,00,001 to ₹12,00,000 (15%)", amount: slabTax3 });
+      breakdown.push({ slab: "₹12,00,001 to ₹15,00,000 (20%)", amount: slabTax4 });
+    } else {
+      const slabTax1 = 300000 * 0.05;
+      const slabTax2 = 300000 * 0.1;
+      const slabTax3 = 300000 * 0.15;
+      const slabTax4 = 300000 * 0.2;
+      const slabTax5 = (income - 1500000) * 0.3;
+      tax = slabTax1 + slabTax2 + slabTax3 + slabTax4 + slabTax5;
+      breakdown.push({ slab: "Up to ₹3,00,000", amount: 0 });
+      breakdown.push({ slab: "₹3,00,001 to ₹6,00,000 (5%)", amount: slabTax1 });
+      breakdown.push({ slab: "₹6,00,001 to ₹9,00,000 (10%)", amount: slabTax2 });
+      breakdown.push({ slab: "₹9,00,001 to ₹12,00,000 (15%)", amount: slabTax3 });
+      breakdown.push({ slab: "₹12,00,001 to ₹15,00,000 (20%)", amount: slabTax4 });
+      breakdown.push({ slab: "Above ₹15,00,000 (30%)", amount: slabTax5 });
+    }
+
+    const cess = tax * 0.04;
+    tax += cess;
+    breakdown.push({ slab: "Health and Education Cess (4%)", amount: cess });
+
+    return { tax, breakdown };
+  };
 
   useEffect(() => {
     const fetchTransactions = async () => {
@@ -173,12 +179,6 @@ const Dashboard = () => {
       setTaxCalculation(taxInfo);
     }
   }, [transactions, totalIncome, autoUpdateEnabled]);
-
-  const totalIncome = transactions.filter(t => t.type === "income").reduce((sum, t) => sum + t.amount, 0);
-  const totalExpenses = transactions.filter(t => t.type === "expense").reduce((sum, t) => sum + t.amount, 0);
-  const netProfit = totalIncome - totalExpenses;
-  const profitPercentage = totalIncome ? ((netProfit / totalIncome) * 100).toFixed(1) : "0";
-  const isProfit = netProfit >= 0;
 
   const updateBalanceWithProfit = async () => {
     if (!user || isUpdatingBalance) return;
@@ -287,7 +287,7 @@ const Dashboard = () => {
                 className="flex items-center gap-2"
                 onClick={() => setTaxModalOpen(true)}
               >
-                <ReceiptIndian className="h-4 w-4" />
+                <Calculator className="h-4 w-4" />
                 Tax Calculator
               </Button>
             </div>
@@ -368,10 +368,10 @@ const Dashboard = () => {
               </div>
 
               {taxCalculation && (
-                <Card>
+                <Card className="mb-6">
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
-                      <ReceiptIndian className="h-5 w-5 text-primary" />
+                      <Receipt className="h-5 w-5 text-primary" />
                       Annual Income Tax Estimate
                     </CardTitle>
                     <CardDescription>Based on the Indian Tax Regime (FY 2023-24)</CardDescription>
@@ -485,7 +485,7 @@ const Dashboard = () => {
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <ReceiptIndian className="h-5 w-5" /> 
+              <Receipt className="h-5 w-5" /> 
               Indian Income Tax Calculator
             </DialogTitle>
             <DialogDescription>
