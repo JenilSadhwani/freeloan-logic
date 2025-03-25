@@ -823,4 +823,45 @@ const Markets = () => {
                                   {period.label}
                                 </Button>
                               ))}
-                            </div>
+                                                      </div>
+                          <div className="h-[350px]">
+                            <ResponsiveContainer width="100%" height="100%">
+                              <AreaChart data={chartData}>
+                                <CartesianGrid strokeDasharray="3 3" />
+                                <XAxis dataKey="date" />
+                                <YAxis domain={['auto', 'auto']} />
+                                <Tooltip content={<CustomTooltip />} />
+                                <Area
+                                  type="monotone"
+                                  dataKey="value"
+                                  stroke="#3b82f6"
+                                  fill="#3b82f6"
+                                  strokeWidth={2}
+                                />
+                              </AreaChart>
+                            </ResponsiveContainer>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </>
+                  ) : (
+                    <div className="flex justify-center py-8 text-muted-foreground">
+                      Select a stock to view details
+                    </div>
+                  )}
+                </div>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="portfolio">
+              <Portfolio />
+            </TabsContent>
+          </Tabs>
+        </div>
+      </div>
+    </Layout>
+  );
+};
+
+export default Markets;
+
