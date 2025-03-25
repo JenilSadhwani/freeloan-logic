@@ -1,12 +1,14 @@
 
-import { useState, useEffect } from "react";
-import { format } from "date-fns";
+import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import Layout from "@/components/Layout";
 import { useAuth } from "@/context/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
-import { formatCurrency } from "@/lib/utils";
+
+// Custom hooks
+import { useTransactionData } from "@/hooks/useTransactionData";
+import { useTaxCalculation } from "@/hooks/useTaxCalculation";
+import { useBalanceManagement } from "@/hooks/useBalanceManagement";
 
 // Imported components
 import DashboardHeader from "@/components/dashboard/DashboardHeader";
@@ -17,97 +19,44 @@ import ExpenseBreakdownChart from "@/components/dashboard/ExpenseBreakdownChart"
 import RecentTransactions from "@/components/dashboard/RecentTransactions";
 import TaxCalculatorModal from "@/components/dashboard/TaxCalculatorModal";
 
-// Utilities
-import { TaxCalculation, calculateIndianIncomeTax } from "@/utils/taxCalculator";
-
 const Dashboard = () => {
-  const [transactions, setTransactions] = useState([]);
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState("overview");
-  const [currentBalance, setCurrentBalance] = useState(0);
-  const [isUpdatingBalance, setIsUpdatingBalance] = useState(false);
   const [autoUpdateEnabled, setAutoUpdateEnabled] = useState(true);
   const [taxModalOpen, setTaxModalOpen] = useState(false);
-  const [manualIncome, setManualIncome] = useState("");
-  const [taxCalculation, setTaxCalculation] = useState<TaxCalculation | null>(null);
 
-  const totalIncome = transactions.filter(t => t.type === "income").reduce((sum, t) => sum + t.amount, 0);
-  const totalExpenses = transactions.filter(t => t.type === "expense").reduce((sum, t) => sum + t.amount, 0);
-  const netProfit = totalIncome - totalExpenses;
-  const profitPercentage = totalIncome ? ((netProfit / totalIncome) * 100).toFixed(1) : "0";
-  const isProfit = netProfit >= 0;
+  // Use our custom hooks
+  const {
+    transactions,
+    totalIncome,
+    totalExpenses,
+    netProfit,
+    profitPercentage,
+    isProfit,
+    recentTransactions,
+    monthlyData,
+    expenseCategories
+  } = useTransactionData(user?.id);
 
-  useEffect(() => {
-    const fetchTransactions = async () => {
-      if (!user) return;
-      const { data, error } = await supabase
-        .from("transactions")
-        .select("*, categories(name)")
-        .eq("user_id", user.id)
-        .order("date", { ascending: false });
+  const {
+    taxCalculation,
+    setTaxCalculation,
+    calculateTaxForIncome
+  } = useTaxCalculation({
+    totalIncome,
+    autoUpdateEnabled
+  });
 
-      if (!error && data) {
-        const formatted = data.map((t) => ({
-          ...t,
-          category_name: t.categories?.name || "Other",
-        }));
-        setTransactions(formatted);
-      }
-    };
-
-    const fetchCurrentBalance = async () => {
-      if (!user) return;
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("current_balance")
-        .eq("id", user.id)
-        .single();
-
-      if (!error && data) {
-        setCurrentBalance(data.current_balance || 0);
-      }
-    };
-
-    fetchTransactions();
-    fetchCurrentBalance();
-  }, [user]);
-
-  useEffect(() => {
-    if (autoUpdateEnabled && user && transactions.length > 0) {
-      updateBalanceWithProfit();
-    }
-  }, [transactions, autoUpdateEnabled, user]);
-
-  useEffect(() => {
-    if (transactions.length > 0 && autoUpdateEnabled) {
-      const annualIncome = totalIncome * 12;
-      const taxInfo = calculateIndianIncomeTax(annualIncome);
-      setTaxCalculation(taxInfo);
-    }
-  }, [transactions, totalIncome, autoUpdateEnabled]);
-
-  const updateBalanceWithProfit = async () => {
-    if (!user || isUpdatingBalance) return;
-    
-    setIsUpdatingBalance(true);
-    
-    const newBalance = totalIncome - totalExpenses;
-    
-    const { error } = await supabase
-      .from("profiles")
-      .update({ current_balance: newBalance })
-      .eq("id", user.id);
-      
-    if (error) {
-      toast.error("Failed to update balance");
-      console.error("Error updating balance:", error);
-    } else {
-      setCurrentBalance(newBalance);
-      toast.success("Balance updated with net profit");
-    }
-    
-    setIsUpdatingBalance(false);
-  };
+  const {
+    currentBalance,
+    isUpdatingBalance,
+    updateBalanceWithProfit
+  } = useBalanceManagement({
+    userId: user?.id,
+    netProfit,
+    transactions,
+    autoUpdateEnabled
+  });
 
   const toggleAutoUpdate = () => {
     setAutoUpdateEnabled(!autoUpdateEnabled);
@@ -116,39 +65,6 @@ const Dashboard = () => {
       : "Auto-update enabled. Balance will update automatically."
     );
   };
-
-  const monthlyData = Array.from({ length: 6 }, (_, i) => {
-    const date = new Date();
-    date.setMonth(date.getMonth() - (5 - i));
-    const month = format(date, "MMM");
-
-    const income = transactions.filter(t => 
-      t.type === "income" && format(new Date(t.date), "MMM") === month
-    ).reduce((sum, t) => sum + t.amount, 0);
-    
-    const expenses = transactions.filter(t => 
-      t.type === "expense" && format(new Date(t.date), "MMM") === month
-    ).reduce((sum, t) => sum + t.amount, 0);
-
-    return { name: month, income, expenses };
-  });
-
-  const categoryMap: Record<string, number> = {};
-  transactions.forEach(t => {
-    if (t.type === "expense") {
-      const key = t.category_name || "Other";
-      categoryMap[key] = (categoryMap[key] || 0) + t.amount;
-    }
-  });
-
-  const colors = ["#4f46e5", "#8b5cf6", "#a855f7", "#d946ef", "#ec4899"];
-  const expenseCategories = Object.entries(categoryMap).map(([name, value], index) => ({
-    name,
-    value: value as number,
-    color: colors[index % colors.length],
-  }));
-
-  const recentTransactions = transactions.slice(0, 5);
 
   return (
     <Layout>
