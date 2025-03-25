@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { format } from "date-fns";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -116,7 +115,6 @@ const Dashboard = () => {
     );
   };
 
-  // Prepare data for charts
   const monthlyData = Array.from({ length: 6 }, (_, i) => {
     const date = new Date();
     date.setMonth(date.getMonth() - (5 - i));
@@ -133,8 +131,7 @@ const Dashboard = () => {
     return { name: month, income, expenses };
   });
 
-  // Prepare data for pie chart
-  const categoryMap = {};
+  const categoryMap: Record<string, number> = {};
   transactions.forEach(t => {
     if (t.type === "expense") {
       const key = t.category_name || "Other";
@@ -145,7 +142,7 @@ const Dashboard = () => {
   const colors = ["#4f46e5", "#8b5cf6", "#a855f7", "#d946ef", "#ec4899"];
   const expenseCategories = Object.entries(categoryMap).map(([name, value], index) => ({
     name,
-    value,
+    value: value as number,
     color: colors[index % colors.length],
   }));
 
