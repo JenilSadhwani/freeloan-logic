@@ -27,6 +27,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
 import Portfolio from "@/components/Portfolio";
+import { formatCurrency } from "@/lib/utils";
 
 // Time periods for chart
 const timePeriods = [
@@ -54,7 +55,7 @@ const Markets = () => {
   // Format number with commas and precision
   const formatNumber = (num, precision = 2) => {
     if (num === undefined || num === null) return "-";
-    return Number(num).toLocaleString(undefined, {
+    return Number(num).toLocaleString('en-IN', {
       minimumFractionDigits: precision,
       maximumFractionDigits: precision,
     });
@@ -342,7 +343,7 @@ const Markets = () => {
     if (active && payload && payload.length) {
       return (
         <div className="bg-background p-2 border border-border rounded-md shadow-md">
-          <p className="text-sm font-medium">${formatNumber(payload[0].value)}</p>
+          <p className="text-sm font-medium">₹{formatNumber(payload[0].value)}</p>
           <p className="text-xs text-muted-foreground">{label}</p>
         </div>
       );
@@ -365,107 +366,177 @@ const Markets = () => {
   // Mock data for fallback if API fails
   const mockStockData = [
     {
-      symbol: "AAPL",
-      name: "Apple Inc.",
-      price: 173.5,
-      change: 2.3,
+      symbol: "RELIANCE",
+      name: "Reliance Industries Ltd.",
+      price: 2875.45,
+      change: 37.3,
       changePercent: 1.35,
       volume: "45.3M",
-      marketCap: "2.8T",
+      marketCap: "19.4T",
       starred: false,
       data: Array.from({ length: 20 }, (_, i) => ({
         time: i,
-        value: 173.5 * (0.98 + Math.random() * 0.04)
+        value: 2875.45 * (0.98 + Math.random() * 0.04)
       }))
     },
     {
-      symbol: "MSFT",
-      name: "Microsoft Corporation",
-      price: 337.8,
-      change: 3.75,
+      symbol: "TCS",
+      name: "Tata Consultancy Services Ltd.",
+      price: 3578.8,
+      change: 45.75,
       changePercent: 1.12,
       volume: "22.1M",
-      marketCap: "2.5T",
+      marketCap: "12.9T",
       starred: false,
       data: Array.from({ length: 20 }, (_, i) => ({
         time: i,
-        value: 337.8 * (0.98 + Math.random() * 0.04)
+        value: 3578.8 * (0.98 + Math.random() * 0.04)
       }))
     },
     {
-      symbol: "GOOGL",
-      name: "Alphabet Inc.",
-      price: 142.65,
-      change: -0.85,
+      symbol: "INFY",
+      name: "Infosys Ltd.",
+      price: 1472.65,
+      change: -8.85,
       changePercent: -0.59,
       volume: "18.7M",
-      marketCap: "1.8T",
+      marketCap: "6.1T",
       starred: false,
       data: Array.from({ length: 20 }, (_, i) => ({
         time: i,
-        value: 142.65 * (0.98 + Math.random() * 0.04)
+        value: 1472.65 * (0.98 + Math.random() * 0.04)
+      }))
+    },
+    {
+      symbol: "ICICIBANK",
+      name: "ICICI Bank Ltd.",
+      price: 1054.30,
+      change: 12.45,
+      changePercent: 1.2,
+      volume: "15.8M",
+      marketCap: "7.3T",
+      starred: false,
+      data: Array.from({ length: 20 }, (_, i) => ({
+        time: i,
+        value: 1054.30 * (0.98 + Math.random() * 0.04)
+      }))
+    },
+    {
+      symbol: "HDFCBANK",
+      name: "HDFC Bank Ltd.",
+      price: 1498.75,
+      change: -5.25,
+      changePercent: -0.35,
+      volume: "12.3M",
+      marketCap: "8.4T",
+      starred: false,
+      data: Array.from({ length: 20 }, (_, i) => ({
+        time: i,
+        value: 1498.75 * (0.98 + Math.random() * 0.04)
+      }))
+    },
+    {
+      symbol: "HINDUNILVR",
+      name: "Hindustan Unilever Ltd.",
+      price: 2376.90,
+      change: 28.15,
+      changePercent: 1.2,
+      volume: "8.5M",
+      marketCap: "5.6T",
+      starred: false,
+      data: Array.from({ length: 20 }, (_, i) => ({
+        time: i,
+        value: 2376.90 * (0.98 + Math.random() * 0.04)
+      }))
+    },
+    {
+      symbol: "SBIN",
+      name: "State Bank of India",
+      price: 726.40,
+      change: 9.85,
+      changePercent: 1.38,
+      volume: "25.6M",
+      marketCap: "6.5T",
+      starred: false,
+      data: Array.from({ length: 20 }, (_, i) => ({
+        time: i,
+        value: 726.40 * (0.98 + Math.random() * 0.04)
+      }))
+    },
+    {
+      symbol: "BHARTIARTL",
+      name: "Bharti Airtel Ltd.",
+      price: 1258.65,
+      change: -3.45,
+      changePercent: -0.27,
+      volume: "10.2M",
+      marketCap: "7.1T",
+      starred: false,
+      data: Array.from({ length: 20 }, (_, i) => ({
+        time: i,
+        value: 1258.65 * (0.98 + Math.random() * 0.04)
       }))
     }
   ];
 
   const mockIndexData = [
     {
-      symbol: "SPY",
-      name: "S&P 500 ETF",
-      price: 451.23,
-      change: 1.05,
-      changePercent: 0.23,
-      volume: "55.7M",
+      symbol: "NIFTY 50",
+      name: "NSE Nifty 50 Index",
+      price: 22451.23,
+      change: 105.05,
+      changePercent: 0.47,
+      volume: "155.7M",
       data: Array.from({ length: 30 }, (_, i) => ({
         day: i,
-        value: 451.23 * (0.97 + Math.sin(i / 15) * 0.03 + Math.random() * 0.01)
+        value: 22451.23 * (0.97 + Math.sin(i / 15) * 0.03 + Math.random() * 0.01)
       }))
     },
     {
-      symbol: "QQQ",
-      name: "Nasdaq 100 ETF",
-      price: 380.45,
-      change: 2.35,
-      changePercent: 0.62,
-      volume: "42.3M",
+      symbol: "SENSEX",
+      name: "BSE Sensex",
+      price: 73980.45,
+      change: 235.35,
+      changePercent: 0.32,
+      volume: "142.3M",
       data: Array.from({ length: 30 }, (_, i) => ({
         day: i,
-        value: 380.45 * (0.97 + Math.sin(i / 15) * 0.03 + Math.random() * 0.01)
+        value: 73980.45 * (0.97 + Math.sin(i / 15) * 0.03 + Math.random() * 0.01)
       }))
     },
     {
-      symbol: "DIA",
-      name: "Dow Jones ETF",
-      price: 346.78,
-      change: -0.45,
-      changePercent: -0.13,
-      volume: "12.1M",
+      symbol: "BANKNIFTY",
+      name: "Nifty Bank Index",
+      price: 48346.78,
+      change: -145.45,
+      changePercent: -0.30,
+      volume: "112.1M",
       data: Array.from({ length: 30 }, (_, i) => ({
         day: i,
-        value: 346.78 * (0.97 + Math.sin(i / 15) * 0.03 + Math.random() * 0.01)
+        value: 48346.78 * (0.97 + Math.sin(i / 15) * 0.03 + Math.random() * 0.01)
       }))
     }
   ];
 
   const mockMarketData = {
-    AAPL: {
+    RELIANCE: {
       chartData: Array.from({ length: 90 }, (_, i) => ({
         date: new Date(Date.now() - (90 - i) * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-        value: 173.5 * (0.95 + Math.sin(i / 20) * 0.05 + (i / 90) * 0.05 + (Math.random() * 0.05 - 0.025))
+        value: 2875.45 * (0.95 + Math.sin(i / 20) * 0.05 + (i / 90) * 0.05 + (Math.random() * 0.05 - 0.025))
       })),
       stats: {
-        open: 172.3,
-        high: 175.1,
-        low: 171.8,
+        open: 2872.3,
+        high: 2895.1,
+        low: 2861.8,
         volume: "45.3M",
         avgVolume: "67.2M",
-        marketCap: "2.8T",
+        marketCap: "19.4T",
         peRatio: 28.5,
-        dividend: 0.24,
+        dividend: 12.4,
         dividendYield: 0.55,
-        eps: 6.08,
-        week52High: 182.94,
-        week52Low: 124.17
+        eps: 106.08,
+        week52High: 2982.94,
+        week52Low: 2424.17
       }
     }
   };
@@ -576,7 +647,7 @@ const Markets = () => {
                               </div>
                               <div className="flex items-center">
                                 <div className="text-right mr-3">
-                                  <div className="font-medium">${formatNumber(stock.price)}</div>
+                                  <div className="font-medium">₹{formatNumber(stock.price)}</div>
                                   <div
                                     className={`text-xs flex items-center ${
                                       stock.change >= 0
@@ -641,7 +712,7 @@ const Markets = () => {
                               </div>
                               <div className="flex items-center">
                                 <div className="text-right mr-3">
-                                  <div className="font-medium">${formatNumber(index.price)}</div>
+                                  <div className="font-medium">₹{formatNumber(index.price)}</div>
                                   <div
                                     className={`text-xs flex items-center ${
                                       index.change >= 0
@@ -713,7 +784,7 @@ const Markets = () => {
                             </div>
                             <div className="text-right">
                               <div className="text-2xl font-bold">
-                                ${formatNumber(stockDetails.price)}
+                                ₹{formatNumber(stockDetails.price)}
                               </div>
                               <div
                                 className={`flex items-center justify-end ${
@@ -753,330 +824,3 @@ const Markets = () => {
                                 </Button>
                               ))}
                             </div>
-                            <div className="flex items-center text-xs text-muted-foreground">
-                              <Clock className="h-3 w-3 mr-1" />
-                              Last updated: {new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} EST
-                            </div>
-                          </div>
-
-                          <div className="h-72">
-                            {isChartLoading ? (
-                              <div className="h-full flex items-center justify-center">
-                                <div className="animate-spin h-8 w-8 border-2 border-primary border-r-transparent rounded-full"></div>
-                              </div>
-                            ) : (
-                              <ResponsiveContainer width="100%" height="100%">
-                                <AreaChart
-                                  data={chartData}
-                                  margin={{
-                                    top: 5,
-                                    right: 5,
-                                    left: 5,
-                                    bottom: 5,
-                                  }}
-                                >
-                                  <defs>
-                                    <linearGradient
-                                      id="colorValue"
-                                      x1="0"
-                                      y1="0"
-                                      x2="0"
-                                      y2="1"
-                                    >
-                                      <stop
-                                        offset="5%"
-                                        stopColor="#4f46e5"
-                                        stopOpacity={0.3}
-                                      />
-                                      <stop
-                                        offset="95%"
-                                        stopColor="#4f46e5"
-                                        stopOpacity={0}
-                                      />
-                                    </linearGradient>
-                                  </defs>
-                                  <CartesianGrid
-                                    strokeDasharray="3 3"
-                                    vertical={false}
-                                    stroke="#f3f4f6"
-                                  />
-                                  <XAxis
-                                    dataKey="date"
-                                    tickLine={false}
-                                    axisLine={false}
-                                    tick={{ fontSize: 12 }}
-                                    tickFormatter={(value) => {
-                                      const date = new Date(value);
-                                      return date.toLocaleDateString("en-US", {
-                                        month: "short",
-                                        day: "numeric",
-                                      });
-                                    }}
-                                    interval={Math.floor(chartData.length / 6)}
-                                  />
-                                  <YAxis
-                                    domain={['auto', 'auto']}
-                                    tickLine={false}
-                                    axisLine={false}
-                                    tick={{ fontSize: 12 }}
-                                    tickFormatter={(value) => `$${formatNumber(value, 0)}`}
-                                    width={50}
-                                  />
-                                  <Tooltip content={<CustomTooltip />} />
-                                  <Area
-                                    type="monotone"
-                                    dataKey="value"
-                                    stroke="#4f46e5"
-                                    strokeWidth={2}
-                                    fillOpacity={1}
-                                    fill="url(#colorValue)"
-                                    isAnimationActive={true}
-                                    animationDuration={1000}
-                                    animationEasing="ease-out"
-                                  />
-                                </AreaChart>
-                              </ResponsiveContainer>
-                            )}
-                          </div>
-                        </CardContent>
-                      </Card>
-
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                        <Card>
-                          <CardHeader className="pb-2">
-                            <CardTitle className="text-lg">Key Statistics</CardTitle>
-                          </CardHeader>
-                          <CardContent>
-                            <div className="grid grid-cols-2 gap-4">
-                              <div>
-                                <div className="text-sm text-muted-foreground">
-                                  Open
-                                </div>
-                                <div className="font-medium">
-                                  ${formatNumber(stockDetails.stats.open)}
-                                </div>
-                              </div>
-                              <div>
-                                <div className="text-sm text-muted-foreground">
-                                  High
-                                </div>
-                                <div className="font-medium">
-                                  ${formatNumber(stockDetails.stats.high)}
-                                </div>
-                              </div>
-                              <div>
-                                <div className="text-sm text-muted-foreground">
-                                  Low
-                                </div>
-                                <div className="font-medium">
-                                  ${formatNumber(stockDetails.stats.low)}
-                                </div>
-                              </div>
-                              <div>
-                                <div className="text-sm text-muted-foreground">
-                                  Volume
-                                </div>
-                                <div className="font-medium">
-                                  {stockDetails.stats.volume}
-                                </div>
-                              </div>
-                              <div>
-                                <div className="text-sm text-muted-foreground">
-                                  Avg Volume
-                                </div>
-                                <div className="font-medium">
-                                  {stockDetails.stats.avgVolume}
-                                </div>
-                              </div>
-                              <div>
-                                <div className="text-sm text-muted-foreground">
-                                  Market Cap
-                                </div>
-                                <div className="font-medium">
-                                  {stockDetails.stats.marketCap}
-                                </div>
-                              </div>
-                              <div>
-                                <div className="text-sm text-muted-foreground">
-                                  P/E Ratio
-                                </div>
-                                <div className="font-medium">
-                                  {formatNumber(stockDetails.stats.peRatio)}
-                                </div>
-                              </div>
-                              <div>
-                                <div className="text-sm text-muted-foreground">
-                                  EPS
-                                </div>
-                                <div className="font-medium">
-                                  ${formatNumber(stockDetails.stats.eps)}
-                                </div>
-                              </div>
-                              <div>
-                                <div className="text-sm text-muted-foreground">
-                                  Dividend
-                                </div>
-                                <div className="font-medium">
-                                  ${formatNumber(stockDetails.stats.dividend)} ({formatNumber(stockDetails.stats.dividendYield)}%)
-                                </div>
-                              </div>
-                              <div>
-                                <div className="text-sm text-muted-foreground">
-                                  52W High
-                                </div>
-                                <div className="font-medium">
-                                  ${formatNumber(stockDetails.stats.week52High)}
-                                </div>
-                              </div>
-                              <div>
-                                <div className="text-sm text-muted-foreground">
-                                  52W Low
-                                </div>
-                                <div className="font-medium">
-                                  ${formatNumber(stockDetails.stats.week52Low)}
-                                </div>
-                              </div>
-                            </div>
-                          </CardContent>
-                        </Card>
-
-                        <Card>
-                          <CardHeader className="pb-2">
-                            <CardTitle className="text-lg">Analysis</CardTitle>
-                          </CardHeader>
-                          <CardContent>
-                            <Tabs defaultValue="sentiment">
-                              <TabsList className="w-full">
-                                <TabsTrigger value="sentiment" className="flex-1">
-                                  Sentiment
-                                </TabsTrigger>
-                                <TabsTrigger value="news" className="flex-1">
-                                  News
-                                </TabsTrigger>
-                              </TabsList>
-                              <TabsContent value="sentiment" className="mt-4">
-                                <div className="space-y-4">
-                                  <div>
-                                    <div className="flex items-center justify-between mb-2">
-                                      <div className="text-sm font-medium">
-                                        Buy Signal
-                                      </div>
-                                      <div className="text-sm text-green-600 font-medium flex items-center">
-                                        <TrendingUp className="h-4 w-4 mr-1" />
-                                        Strong
-                                      </div>
-                                    </div>
-                                    <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
-                                      <div
-                                        className="bg-green-500 h-full rounded-full"
-                                        style={{ width: "85%" }}
-                                      />
-                                    </div>
-                                  </div>
-                                  <div>
-                                    <div className="flex items-center justify-between mb-2">
-                                      <div className="text-sm font-medium">
-                                        Analyst Ratings
-                                      </div>
-                                      <div className="text-sm font-medium">
-                                        25 Buy · 8 Hold · 1 Sell
-                                      </div>
-                                    </div>
-                                    <div className="flex h-2 w-full rounded-full overflow-hidden">
-                                      <div
-                                        className="bg-green-500 h-full"
-                                        style={{ width: "74%" }}
-                                      />
-                                      <div
-                                        className="bg-yellow-500 h-full"
-                                        style={{ width: "23%" }}
-                                      />
-                                      <div
-                                        className="bg-red-500 h-full"
-                                        style={{ width: "3%" }}
-                                      />
-                                    </div>
-                                  </div>
-                                  <div>
-                                    <div className="flex items-center justify-between mb-2">
-                                      <div className="text-sm font-medium">
-                                        Technical Indicators
-                                      </div>
-                                      <div className="text-sm font-medium">
-                                        Neutral
-                                      </div>
-                                    </div>
-                                    <div className="flex h-2 w-full rounded-full overflow-hidden">
-                                      <div
-                                        className="bg-green-500 h-full"
-                                        style={{ width: "45%" }}
-                                      />
-                                      <div
-                                        className="bg-yellow-500 h-full"
-                                        style={{ width: "32%" }}
-                                      />
-                                      <div
-                                        className="bg-red-500 h-full"
-                                        style={{ width: "23%" }}
-                                      />
-                                    </div>
-                                  </div>
-                                </div>
-                              </TabsContent>
-                              <TabsContent value="news" className="mt-4">
-                                <div className="space-y-3">
-                                  <div className="p-3 border border-border rounded-lg">
-                                    <div className="text-sm font-medium">{stockDetails.name} Reports Strong Quarterly Results</div>
-                                    <div className="text-xs text-muted-foreground mt-1">
-                                      Revenue and earnings exceeded analyst expectations, driven by strong product performance and margin expansion.
-                                    </div>
-                                    <div className="text-xs text-muted-foreground mt-2">2 hours ago • Business Insider</div>
-                                  </div>
-                                  <div className="p-3 border border-border rounded-lg">
-                                    <div className="text-sm font-medium">Analysts Raise Price Target for {stockDetails.symbol}</div>
-                                    <div className="text-xs text-muted-foreground mt-1">
-                                      Multiple analysts have raised their price targets following the company's latest product announcements.
-                                    </div>
-                                    <div className="text-xs text-muted-foreground mt-2">5 hours ago • Market Watch</div>
-                                  </div>
-                                  <div className="p-3 border border-border rounded-lg">
-                                    <div className="text-sm font-medium">{stockDetails.name} Expands Operations</div>
-                                    <div className="text-xs text-muted-foreground mt-1">
-                                      The company announced plans to expand its operations in Asia, potentially opening new growth opportunities.
-                                    </div>
-                                    <div className="text-xs text-muted-foreground mt-2">1 day ago • Bloomberg</div>
-                                  </div>
-                                </div>
-                              </TabsContent>
-                            </Tabs>
-                          </CardContent>
-                        </Card>
-                      </div>
-                    </>
-                  ) : (
-                    <div className="flex items-center justify-center h-64">
-                      <div className="text-center">
-                        <div className="text-lg font-medium">
-                          Select a stock to view details
-                        </div>
-                        <div className="text-sm text-muted-foreground mt-1">
-                          Choose from the watchlist on the left
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </TabsContent>
-            
-            <TabsContent value="portfolio" className="space-y-6">
-              <Portfolio />
-            </TabsContent>
-          </Tabs>
-        </div>
-      </div>
-    </Layout>
-  );
-};
-
-export default Markets;

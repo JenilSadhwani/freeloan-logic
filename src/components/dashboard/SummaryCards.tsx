@@ -38,7 +38,7 @@ const SummaryCards = ({
         <CardHeader>
           <CardDescription>Current Balance</CardDescription>
           <CardTitle className="text-2xl font-bold flex items-center">
-            ${currentBalance.toLocaleString()}
+            ₹{currentBalance.toLocaleString('en-IN')}
             {!autoUpdateEnabled && (
               <Button 
                 variant="ghost" 
@@ -63,7 +63,7 @@ const SummaryCards = ({
         <CardHeader>
           <CardDescription>Total Income</CardDescription>
           <CardTitle className="text-2xl font-bold flex items-center">
-            ${totalIncome.toLocaleString()}
+            ₹{totalIncome.toLocaleString('en-IN')}
             <span className="ml-2 text-green-500 flex items-center text-sm font-normal">
               <ArrowUpRight className="h-4 w-4" />
               {/* example stat */}
@@ -77,7 +77,7 @@ const SummaryCards = ({
         <CardHeader>
           <CardDescription>Total Expenses</CardDescription>
           <CardTitle className="text-2xl font-bold flex items-center">
-            ${totalExpenses.toLocaleString()}
+            ₹{totalExpenses.toLocaleString('en-IN')}
             <span className="ml-2 text-red-500 flex items-center text-sm font-normal">
               <ArrowUpRight className="h-4 w-4" />
               8.2%
@@ -90,7 +90,7 @@ const SummaryCards = ({
         <CardHeader>
           <CardDescription>Net Profit</CardDescription>
           <CardTitle className="text-2xl font-bold flex items-center">
-            ${netProfit.toLocaleString()}
+            ₹{netProfit.toLocaleString('en-IN')}
             <span className={`ml-2 flex items-center text-sm font-normal ${isProfit ? 'text-green-500' : 'text-red-500'}`}>
               {isProfit ? <ArrowUpRight className="h-4 w-4" /> : <ArrowDownRight className="h-4 w-4" />}
               {profitPercentage}%
