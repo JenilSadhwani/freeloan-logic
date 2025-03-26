@@ -3,7 +3,7 @@ import {
   Wallet,
   Plus,
   CalendarIcon,
-  DollarSign,
+  BadgeIndianRupee,
   Trash2,
   Save,
   ArrowRight,
@@ -391,7 +391,7 @@ const Budget = () => {
                           <FormLabel>Amount</FormLabel>
                           <FormControl>
                             <div className="relative">
-                              <DollarSign className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                              <BadgeIndianRupee className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                               <Input
                                 placeholder="0.00"
                                 type="number"

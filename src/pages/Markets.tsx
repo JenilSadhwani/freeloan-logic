@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from "react";
 import { Search, Filter, ArrowDown, ArrowUp, RefreshCw, Star, Plus, Clock, TrendingUp, TrendingDown } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -29,8 +28,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
 import Portfolio from "@/components/Portfolio";
 import { formatCurrency } from "@/lib/utils";
+import MarketNews from "@/components/market/MarketNews";
+import MarketSentimentAnalysis from "@/components/market/MarketSentimentAnalysis";
 
-// Time periods for chart
 const timePeriods = [
   { label: "1D", value: "1d" },
   { label: "1W", value: "1w" },
@@ -53,7 +53,6 @@ const Markets = () => {
   const [indexData, setIndexData] = useState([]);
   const [activeTab, setActiveTab] = useState("market");
 
-  // Format number with commas and precision
   const formatNumber = (num, precision = 2) => {
     if (num === undefined || num === null) return "-";
     return Number(num).toLocaleString('en-IN', {
@@ -62,14 +61,12 @@ const Markets = () => {
     });
   };
 
-  // Fetch market data from FinLab API
   const fetchMarketData = useCallback(async () => {
     if (!user) return;
     
     try {
       setIsLoading(true);
       
-      // Get bearer token for authorization
       const { data: { session } } = await supabase.auth.getSession();
       
       if (!session) {
@@ -77,7 +74,6 @@ const Markets = () => {
         return;
       }
       
-      // Fetch most active stocks
       const response = await fetch("/api/functions/v1/finlab?endpoint=market/most_active", {
         headers: {
           Authorization: `Bearer ${session.access_token}`
@@ -91,7 +87,6 @@ const Markets = () => {
       const result = await response.json();
       
       if (result.data) {
-        // Transform the data for our UI
         const stocks = result.data.map(stock => ({
           symbol: stock.symbol,
           name: stock.name || `${stock.symbol} Inc.`,
@@ -105,18 +100,16 @@ const Markets = () => {
           starred: false,
           data: Array.from({ length: 20 }, (_, i) => ({
             time: i,
-            value: stock.last_price * (0.98 + Math.random() * 0.04) // Simulate small price movements
+            value: stock.last_price * (0.98 + Math.random() * 0.04)
           }))
         }));
         
         setStockList(stocks);
         
-        // If no stock is selected yet, select the first one
         if (!selectedStock && stocks.length > 0) {
           setSelectedStock(stocks[0].symbol);
         }
         
-        // Fetch index data
         const indexResponse = await fetch("/api/functions/v1/finlab?endpoint=market/indices", {
           headers: {
             Authorization: `Bearer ${session.access_token}`
@@ -145,7 +138,6 @@ const Markets = () => {
         }
       }
       
-      // Fetch details for the selected stock if one is selected
       if (selectedStock) {
         fetchStockDetails(selectedStock, session.access_token);
       }
@@ -153,7 +145,6 @@ const Markets = () => {
       console.error("Error fetching market data:", error);
       toast.error("Failed to load market data");
       
-      // Fall back to mock data if API fails
       setStockList(mockStockData);
       setIndexData(mockIndexData);
       
@@ -172,12 +163,10 @@ const Markets = () => {
     }
   }, [selectedStock, user]);
 
-  // Fetch details for a specific stock
   const fetchStockDetails = async (symbol, token) => {
     try {
       setIsChartLoading(true);
       
-      // Fetch stock details
       const detailsResponse = await fetch(`/api/functions/v1/finlab?endpoint=stocks/profile&symbols=${symbol}`, {
         headers: {
           Authorization: `Bearer ${token}`
@@ -193,7 +182,6 @@ const Markets = () => {
       if (detailsResult.data && detailsResult.data.length > 0) {
         const stockInfo = detailsResult.data[0];
         
-        // Fetch price data for chart
         const chartResponse = await fetch(`/api/functions/v1/finlab?endpoint=stocks/historical&symbols=${symbol}&period=${activePeriod}`, {
           headers: {
             Authorization: `Bearer ${token}`
@@ -215,7 +203,6 @@ const Markets = () => {
           }
         }
         
-        // Find the stock in the list to get current price and change
         const stockInList = stockList.find(s => s.symbol === symbol);
         
         setStockDetails({
@@ -245,7 +232,6 @@ const Markets = () => {
         });
         
         setChartData(chartPoints.length > 0 ? chartPoints : 
-          // Fallback data if no chart data is available
           Array.from({ length: 90 }, (_, i) => ({
             date: new Date(Date.now() - (90 - i) * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
             value: stockInList?.price * (0.95 + Math.sin(i / 20) * 0.05 + (i / 90) * 0.05 + (Math.random() * 0.05 - 0.025))
@@ -256,7 +242,6 @@ const Markets = () => {
       console.error(`Error fetching details for ${symbol}:`, error);
       toast.error(`Failed to load details for ${symbol}`);
       
-      // Fall back to mock data
       const activeStock = mockStockData.find(s => s.symbol === symbol);
       if (activeStock) {
         setStockDetails({
@@ -270,7 +255,6 @@ const Markets = () => {
     }
   };
 
-  // Handle period change for charts
   const handlePeriodChange = async (period) => {
     setActivePeriod(period);
     
@@ -311,7 +295,6 @@ const Markets = () => {
         console.error(`Error fetching chart data for period ${period}:`, error);
         toast.error("Failed to load historical data");
         
-        // Fall back to mock data
         setChartData(mockMarketData.RELIANCE.chartData);
       } finally {
         setIsChartLoading(false);
@@ -319,7 +302,6 @@ const Markets = () => {
     }
   };
 
-  // Toggle star status for a stock
   const toggleStarred = (symbol) => {
     setStockList(
       stockList.map((stock) =>
@@ -328,18 +310,15 @@ const Markets = () => {
     );
   };
 
-  // Refresh data
   const refreshData = () => {
     fetchMarketData();
     toast.success("Market data refreshed");
   };
 
-  // Load data on component mount
   useEffect(() => {
     fetchMarketData();
   }, [fetchMarketData]);
 
-  // Custom tooltip for charts
   const CustomTooltip = ({ active, payload, label }: TooltipProps<number, string>) => {
     if (active && payload && payload.length) {
       return (
@@ -352,19 +331,16 @@ const Markets = () => {
     return null;
   };
 
-  // Filter stocks based on search query
   const filteredStocks = stockList.filter(
     (stock) =>
       stock.symbol.toLowerCase().includes(searchQuery.toLowerCase()) ||
       stock.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  // Get active stock data
   const activeStock = stockList.find(
     (stock) => stock.symbol === selectedStock
   );
 
-  // Mock data for fallback if API fails
   const mockStockData = [
     {
       symbol: "RELIANCE",
@@ -590,7 +566,6 @@ const Markets = () => {
 
             <TabsContent value="market" className="space-y-6">
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* Stock list and search column */}
                 <div className="space-y-6">
                   <div className="relative">
                     <Search className="absolute left-3 top-2.5 h-5 w-5 text-muted-foreground" />
@@ -688,7 +663,6 @@ const Markets = () => {
                     </CardContent>
                   </Card>
 
-                  {/* Market indices */}
                   <Card>
                     <CardHeader className="pb-2">
                       <CardTitle className="text-lg">Market Indices</CardTitle>
@@ -754,7 +728,6 @@ const Markets = () => {
                   </Card>
                 </div>
 
-                {/* Stock detail column */}
                 <div className="lg:col-span-2 space-y-6">
                   {activeStock && stockDetails ? (
                     <>
@@ -853,6 +826,11 @@ const Markets = () => {
                   )}
                 </div>
               </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <MarketNews />
+                <MarketSentimentAnalysis />
+              </div>
             </TabsContent>
 
             <TabsContent value="portfolio">
@@ -866,4 +844,3 @@ const Markets = () => {
 };
 
 export default Markets;
-

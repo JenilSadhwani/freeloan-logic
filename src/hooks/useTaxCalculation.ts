@@ -1,6 +1,7 @@
 
 import { useState, useEffect } from "react";
 import { TaxCalculation, calculateIndianIncomeTax } from "@/utils/taxCalculator";
+import { toast } from "sonner";
 
 interface UseTaxCalculationProps {
   totalIncome: number;
@@ -11,6 +12,7 @@ interface UseTaxCalculationResult {
   taxCalculation: TaxCalculation | null;
   setTaxCalculation: React.Dispatch<React.SetStateAction<TaxCalculation | null>>;
   calculateTaxForIncome: (income: number) => void;
+  deleteTaxCalculation: () => void;
 }
 
 export const useTaxCalculation = ({ 
@@ -35,10 +37,17 @@ export const useTaxCalculation = ({
       setTaxCalculation(taxInfo);
     }
   };
+  
+  // Function to delete the tax calculation
+  const deleteTaxCalculation = () => {
+    setTaxCalculation(null);
+    toast.success("Tax calculation deleted");
+  };
 
   return {
     taxCalculation,
     setTaxCalculation,
-    calculateTaxForIncome
+    calculateTaxForIncome,
+    deleteTaxCalculation
   };
 };
