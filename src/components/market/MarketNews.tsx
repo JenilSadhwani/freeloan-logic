@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from "react";
-import { ExternalLink, Trending } from "lucide-react";
+import { ExternalLink, TrendingUp } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -92,7 +92,7 @@ const MarketNews = () => {
     <Card className="w-full">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Trending className="h-5 w-5" />
+          <TrendingUp className="h-5 w-5" />
           Market News & Analysis
         </CardTitle>
         <CardDescription>Latest financial news and market updates from India</CardDescription>
