@@ -1,6 +1,5 @@
-
 import { useState, useEffect } from "react";
-import { TrendingUp, ExternalLink, MessageSquare, Search, BarChart4 } from "lucide-react";
+import { TrendingUp, ExternalLink, MessageSquare, Search, BarChart4, RefreshCw } from "lucide-react";
 import {
   Card,
   CardContent,
