@@ -47,10 +47,18 @@ export const useTransactionData = (userId: string | undefined): TransactionData 
         .order("date", { ascending: false });
 
       if (!error && data) {
-        const formatted = data.map((t) => ({
-          ...t,
-          category_name: t.categories?.name || "Other",
-        }));
+        // Type guard to ensure transaction type is either 'income' or 'expense'
+        const formatted = data.map((t) => {
+          // Validate transaction type
+          const transactionType = t.type === 'income' ? 'income' : 'expense';
+          
+          return {
+            ...t,
+            type: transactionType, // Ensure type is explicitly 'income' or 'expense'
+            category_name: t.categories?.name || "Other",
+          } as Transaction; // Type assertion after validation
+        });
+        
         setTransactions(formatted);
       }
     };
