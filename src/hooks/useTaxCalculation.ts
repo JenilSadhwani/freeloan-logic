@@ -21,11 +21,10 @@ export const useTaxCalculation = ({
 }: UseTaxCalculationProps): UseTaxCalculationResult => {
   const [taxCalculation, setTaxCalculation] = useState<TaxCalculation | null>(null);
 
-  // Calculate tax based on annual income
+  // Calculate tax based on monthly income
   useEffect(() => {
     if (totalIncome > 0 && autoUpdateEnabled) {
-      const annualIncome = totalIncome * 12;
-      const taxInfo = calculateIndianIncomeTax(annualIncome);
+      const taxInfo = calculateIndianIncomeTax(totalIncome * 12);
       setTaxCalculation(taxInfo);
     }
   }, [totalIncome, autoUpdateEnabled]);

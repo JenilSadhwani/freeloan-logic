@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
@@ -41,7 +40,8 @@ const Dashboard = () => {
   const {
     taxCalculation,
     setTaxCalculation,
-    calculateTaxForIncome
+    calculateTaxForIncome,
+    deleteTaxCalculation
   } = useTaxCalculation({
     totalIncome,
     autoUpdateEnabled
@@ -100,6 +100,7 @@ const Dashboard = () => {
                   taxCalculation={taxCalculation} 
                   totalIncome={totalIncome} 
                   openTaxModal={() => setTaxModalOpen(true)} 
+                  deleteTaxCalculation={deleteTaxCalculation}
                 />
               )}
 
