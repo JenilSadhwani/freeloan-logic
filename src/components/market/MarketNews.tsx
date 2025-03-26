@@ -1,189 +1,139 @@
 
-import { useEffect, useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Newspaper, TrendingUp, TrendingDown, Sparkles } from "lucide-react";
-import { 
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
+import { useState, useEffect } from "react";
+import { ExternalLink, Trending } from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
-interface NewsItem {
-  id: string;
+interface MarketNewsItem {
   title: string;
-  summary: string;
+  description: string;
   url: string;
+  publishedAt: string;
   source: string;
-  date: string;
-  sentiment: 'positive' | 'negative' | 'neutral';
+  sentiment: "positive" | "negative" | "neutral";
 }
 
-const MOCK_NEWS: NewsItem[] = [
-  {
-    id: '1',
-    title: 'Indian Markets Hit Record High as Investors Cheer Strong Earnings',
-    summary: 'India's benchmark indices Sensex and Nifty 50 reached record highs today, driven by better-than-expected corporate earnings and strong foreign investments.',
-    url: '#',
-    source: 'Economic Times',
-    date: '2024-07-15',
-    sentiment: 'positive'
-  },
-  {
-    id: '2',
-    title: 'RBI Keeps Repo Rate Unchanged, Maintains Growth Forecast',
-    summary: 'The Reserve Bank of India (RBI) has decided to keep the repo rate unchanged at 6.5% in its latest monetary policy meeting, while maintaining its GDP growth forecast at 7.2% for FY 2024-25.',
-    url: '#',
-    source: 'Business Standard',
-    date: '2024-07-14',
-    sentiment: 'neutral'
-  },
-  {
-    id: '3',
-    title: 'Rupee Falls 15 Paise Against US Dollar Amid Global Uncertainties',
-    summary: 'The Indian rupee depreciated by 15 paise against the US dollar, closing at 83.35, as global economic uncertainties and rising crude oil prices put pressure on emerging market currencies.',
-    url: '#',
-    source: 'Financial Express',
-    date: '2024-07-13',
-    sentiment: 'negative'
-  },
-  {
-    id: '4',
-    title: 'IT Sector Leads Gains as Infosys, TCS Report Strong Q1 Results',
-    summary: 'IT giants Infosys and TCS reported better-than-expected Q1 results, driving the sector higher and contributing significantly to market gains.',
-    url: '#',
-    source: 'Mint',
-    date: '2024-07-12',
-    sentiment: 'positive'
-  },
-  {
-    id: '5',
-    title: 'Government Unveils New Policy to Boost Manufacturing Sector',
-    summary: 'The Indian government has announced a new policy framework aimed at boosting the manufacturing sector, with special incentives for electronics and semiconductor industries.',
-    url: '#',
-    source: 'The Hindu BusinessLine',
-    date: '2024-07-11',
-    sentiment: 'positive'
-  }
-];
-
-const MarketSentiment = () => {
-  const [marketSentiment, setMarketSentiment] = useState<'positive' | 'negative' | 'neutral'>('neutral');
-  const [sentimentScore, setSentimentScore] = useState(0);
+const MarketNews = () => {
+  const [newsItems, setNewsItems] = useState<MarketNewsItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Calculate sentiment based on news
-    const positiveCount = MOCK_NEWS.filter(news => news.sentiment === 'positive').length;
-    const negativeCount = MOCK_NEWS.filter(news => news.sentiment === 'negative').length;
-    
-    const score = positiveCount - negativeCount;
-    setSentimentScore(score);
-    
-    if (score > 1) {
-      setMarketSentiment('positive');
-    } else if (score < 0) {
-      setMarketSentiment('negative');
-    } else {
-      setMarketSentiment('neutral');
-    }
+    // This would normally fetch from an API, but for demo purposes we'll use mock data
+    setIsLoading(true);
+    // Simulate API call
+    setTimeout(() => {
+      setNewsItems([
+        {
+          title: "RBI Keeps Repo Rate Unchanged at 6.5%",
+          description: "The Reserve Bank of India (RBI) maintained its key policy rate for the eighth consecutive time, focusing on controlling inflation.",
+          url: "https://example.com/rbi-news",
+          publishedAt: "2023-04-15T09:30:00Z",
+          source: "Economic Times",
+          sentiment: "neutral"
+        },
+        {
+          title: "Sensex Crosses 74,000 Mark for First Time",
+          description: "Indian stock market benchmark Sensex crossed the 74,000 mark for the first time amid strong foreign investment inflows.",
+          url: "https://example.com/sensex-news",
+          publishedAt: "2023-04-14T11:15:00Z",
+          source: "LiveMint",
+          sentiment: "positive"
+        },
+        {
+          title: "Rupee Falls 12 Paise to 83.42 Against US Dollar",
+          description: "The Indian rupee depreciated 12 paise to close at 83.42 against the US dollar due to persistent foreign fund outflows.",
+          url: "https://example.com/rupee-news",
+          publishedAt: "2023-04-13T14:45:00Z",
+          source: "Business Standard",
+          sentiment: "negative"
+        },
+        {
+          title: "Government Raises Interest Rates on Small Savings Schemes",
+          description: "The Indian government has increased interest rates on various small savings schemes by up to 30 basis points for the April-June quarter.",
+          url: "https://example.com/savings-news",
+          publishedAt: "2023-04-12T10:00:00Z",
+          source: "Financial Express",
+          sentiment: "positive"
+        }
+      ]);
+      setIsLoading(false);
+    }, 1500);
   }, []);
 
-  return (
-    <div className="flex flex-col sm:flex-row items-center justify-between p-4 bg-muted/50 rounded-lg mb-6">
-      <div className="flex items-center mb-4 sm:mb-0">
-        {marketSentiment === 'positive' ? (
-          <TrendingUp className="h-10 w-10 text-green-500 mr-4" />
-        ) : marketSentiment === 'negative' ? (
-          <TrendingDown className="h-10 w-10 text-red-500 mr-4" />
-        ) : (
-          <Sparkles className="h-10 w-10 text-blue-500 mr-4" />
-        )}
-        <div>
-          <h3 className="text-lg font-semibold">Market Sentiment</h3>
-          <p className={`text-sm ${
-            marketSentiment === 'positive' 
-              ? 'text-green-600' 
-              : marketSentiment === 'negative' 
-                ? 'text-red-600' 
-                : 'text-blue-600'
-          }`}>
-            {marketSentiment === 'positive' 
-              ? 'Bullish' 
-              : marketSentiment === 'negative' 
-                ? 'Bearish' 
-                : 'Neutral'}
-          </p>
-        </div>
-      </div>
-      <div className="flex space-x-3">
-        <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 hover:bg-green-100">
-          Positive: {MOCK_NEWS.filter(news => news.sentiment === 'positive').length}
-        </Badge>
-        <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200 hover:bg-yellow-100">
-          Neutral: {MOCK_NEWS.filter(news => news.sentiment === 'neutral').length}
-        </Badge>
-        <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200 hover:bg-red-100">
-          Negative: {MOCK_NEWS.filter(news => news.sentiment === 'negative').length}
-        </Badge>
-      </div>
-    </div>
-  );
-};
+  const getSentimentColor = (sentiment: string) => {
+    switch (sentiment) {
+      case "positive":
+        return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300";
+      case "negative":
+        return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300";
+      default:
+        return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300";
+    }
+  };
 
-const MarketNews = () => {
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString("en-IN", {
+      day: "numeric",
+      month: "short",
+      year: "numeric"
+    });
+  };
+
   return (
-    <Card>
-      <CardHeader className="pb-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center">
-            <Newspaper className="h-5 w-5 text-primary mr-2" />
-            <CardTitle>Market News & Sentiment</CardTitle>
-          </div>
-        </div>
-        <CardDescription>Latest financial news and market sentiment analysis</CardDescription>
+    <Card className="w-full">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Trending className="h-5 w-5" />
+          Market News & Analysis
+        </CardTitle>
+        <CardDescription>Latest financial news and market updates from India</CardDescription>
       </CardHeader>
+
       <CardContent>
-        <MarketSentiment />
-        
-        <Accordion type="single" collapsible className="w-full">
-          {MOCK_NEWS.map((news) => (
-            <AccordionItem key={news.id} value={news.id}>
-              <AccordionTrigger className="hover:no-underline">
-                <div className="text-left flex items-start">
-                  <Badge 
-                    className={`mr-3 mt-0.5 ${
-                      news.sentiment === 'positive' 
-                        ? 'bg-green-100 text-green-800 hover:bg-green-200' 
-                        : news.sentiment === 'negative' 
-                          ? 'bg-red-100 text-red-800 hover:bg-red-200' 
-                          : 'bg-blue-100 text-blue-800 hover:bg-blue-200'
-                    }`}
-                  >
-                    {news.source}
+        {isLoading ? (
+          <div className="flex justify-center py-8">
+            <div className="inline-block h-6 w-6 animate-spin rounded-full border-4 border-solid border-primary border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]"></div>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {newsItems.map((item, index) => (
+              <div key={index} className="border-b pb-4 last:border-0 last:pb-0">
+                <div className="flex justify-between items-start mb-1">
+                  <h3 className="font-medium">{item.title}</h3>
+                  <Badge variant="outline" className={getSentimentColor(item.sentiment)}>
+                    {item.sentiment.charAt(0).toUpperCase() + item.sentiment.slice(1)}
                   </Badge>
-                  <span>{news.title}</span>
                 </div>
-              </AccordionTrigger>
-              <AccordionContent>
-                <div className="pl-14">
-                  <p className="mb-2">{news.summary}</p>
-                  <div className="flex justify-between items-center mt-2 text-sm text-muted-foreground">
-                    <span>{new Date(news.date).toLocaleDateString('en-IN', {
-                      day: 'numeric',
-                      month: 'short',
-                      year: 'numeric'
-                    })}</span>
-                    <a href={news.url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
-                      Read more
+                <p className="text-sm text-muted-foreground mb-2">{item.description}</p>
+                <div className="flex justify-between items-center text-xs text-muted-foreground">
+                  <span>{item.source} • {formatDate(item.publishedAt)}</span>
+                  <Button variant="ghost" size="sm" className="h-auto p-0" asChild>
+                    <a href={item.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1">
+                      Read more <ExternalLink className="h-3 w-3" />
                     </a>
-                  </div>
+                  </Button>
                 </div>
-              </AccordionContent>
-            </AccordionItem>
-          ))}
-        </Accordion>
+              </div>
+            ))}
+          </div>
+        )}
       </CardContent>
+      <CardFooter className="border-t pt-4 flex justify-center">
+        <Button variant="outline" asChild>
+          <a href="https://www.rbi.org.in/" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1">
+            Visit RBI Website <ExternalLink className="h-4 w-4 ml-1" />
+          </a>
+        </Button>
+      </CardFooter>
     </Card>
   );
 };
