@@ -25,6 +25,9 @@ const TaxSummary = ({
 }: TaxSummaryProps) => {
   if (!taxCalculation) return null;
 
+  // Calculate monthly tax from annual tax
+  const monthlyTax = taxCalculation.tax / 12;
+
   return (
     <Card className="mb-6">
       <CardHeader>
@@ -43,13 +46,13 @@ const TaxSummary = ({
           <div>
             <p className="text-sm text-muted-foreground mb-1">Estimated Monthly Tax</p>
             <p className="text-2xl font-semibold text-red-500">
-              ₹{Math.round(taxCalculation.tax / 12).toLocaleString('en-IN')}
+              ₹{Math.round(monthlyTax).toLocaleString('en-IN')}
             </p>
           </div>
           <div>
             <p className="text-sm text-muted-foreground mb-1">Monthly Tax Provision</p>
             <p className="text-2xl font-semibold text-amber-500">
-              ₹{Math.round(taxCalculation.tax / 12).toLocaleString('en-IN')}
+              ₹{Math.round(monthlyTax).toLocaleString('en-IN')}
             </p>
           </div>
           <div className="flex space-x-2">

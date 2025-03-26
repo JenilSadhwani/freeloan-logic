@@ -24,7 +24,9 @@ export const useTaxCalculation = ({
   // Calculate tax based on monthly income
   useEffect(() => {
     if (totalIncome > 0 && autoUpdateEnabled) {
-      const taxInfo = calculateIndianIncomeTax(totalIncome * 12);
+      // Convert monthly income to annual for tax calculation
+      const annualIncome = totalIncome * 12;
+      const taxInfo = calculateIndianIncomeTax(annualIncome);
       setTaxCalculation(taxInfo);
     }
   }, [totalIncome, autoUpdateEnabled]);
@@ -32,8 +34,12 @@ export const useTaxCalculation = ({
   // Function to calculate tax for a manually entered income
   const calculateTaxForIncome = (income: number) => {
     if (income > 0) {
+      // Ensure we're calculating with the full annual amount
       const taxInfo = calculateIndianIncomeTax(income);
       setTaxCalculation(taxInfo);
+      toast.success("Tax calculated successfully");
+    } else {
+      toast.error("Please enter a valid income amount");
     }
   };
   

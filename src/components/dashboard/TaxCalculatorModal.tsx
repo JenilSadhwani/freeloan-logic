@@ -37,6 +37,7 @@ const TaxCalculatorModal = ({
     }
     
     const income = Number(manualIncome);
+    // Make sure we're using the annual income for calculation
     const taxInfo = calculateIndianIncomeTax(income);
     setTaxCalculation(taxInfo);
     toast.success("Tax calculated successfully");
