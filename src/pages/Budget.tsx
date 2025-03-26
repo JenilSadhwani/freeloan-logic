@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import {
   Wallet,
@@ -53,7 +54,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { cn } from "@/lib/utils";
+import { cn, formatCurrency } from "@/lib/utils";
 import {
   Select,
   SelectContent,
@@ -588,7 +589,7 @@ const Budget = () => {
               <CardHeader className="pb-2">
                 <CardDescription>Current Balance</CardDescription>
                 <CardTitle className="text-2xl font-bold">
-                  ${currentBalance.toLocaleString()}
+                  {formatCurrency(currentBalance)}
                 </CardTitle>
               </CardHeader>
             </Card>
@@ -596,8 +597,8 @@ const Budget = () => {
               <CardHeader className="pb-2">
                 <CardDescription>Upcoming (Next 30 Days)</CardDescription>
                 <CardTitle className="text-2xl font-bold">
-                  <span className="text-green-500">+${upcomingTotal.income.toLocaleString()}</span> / 
-                  <span className="text-red-500">-${upcomingTotal.expense.toLocaleString()}</span>
+                  <span className="text-green-500">{formatCurrency(upcomingTotal.income)}</span> / 
+                  <span className="text-red-500">-{formatCurrency(upcomingTotal.expense)}</span>
                 </CardTitle>
               </CardHeader>
             </Card>
@@ -606,7 +607,7 @@ const Budget = () => {
                 <CardDescription>Projected Balance</CardDescription>
                 <CardTitle className="text-2xl font-bold">
                   <span className={projectedBalance >= 0 ? "text-green-500" : "text-red-500"}>
-                    ${projectedBalance.toLocaleString()}
+                    {formatCurrency(projectedBalance)}
                   </span>
                 </CardTitle>
               </CardHeader>
@@ -678,7 +679,7 @@ const Budget = () => {
                               <div className={`font-medium ${
                                 item.type === "income" ? "text-green-600" : "text-red-600"
                               }`}>
-                                {item.type === "income" ? "+" : "-"}${Number(item.amount).toLocaleString()}
+                                {item.type === "income" ? "" : "-"}{formatCurrency(Number(item.amount))}
                               </div>
                               <Button 
                                 variant="ghost" 
@@ -724,7 +725,7 @@ const Budget = () => {
                                 <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                               ))}
                             </Pie>
-                            <Tooltip formatter={(value) => [`$${value}`, 'Amount']} />
+                            <Tooltip formatter={(value) => [formatCurrency(value), 'Amount']} />
                           </PieChart>
                         </ResponsiveContainer>
                       ) : (
@@ -752,7 +753,7 @@ const Budget = () => {
                           <CartesianGrid strokeDasharray="3 3" />
                           <XAxis dataKey="name" />
                           <YAxis />
-                          <Tooltip formatter={(value) => [`$${value}`, undefined]} />
+                          <Tooltip formatter={(value) => [formatCurrency(value), undefined]} />
                           <Legend />
                           <Bar dataKey="planned" name="Planned" fill="#8884d8" />
                           <Bar dataKey="actual" name="Actual" fill="#82ca9d" />
