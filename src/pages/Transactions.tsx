@@ -30,8 +30,8 @@ import { z } from "zod";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { format } from "date-fns";
+import { formatCurrency } from "@/lib/utils";
 
-// Define types
 interface Transaction {
   id: string;
   amount: number;
@@ -57,7 +57,6 @@ interface PaymentMethod {
   type: string;
 }
 
-// Form schema
 const transactionSchema = z.object({
   amount: z.coerce.number().min(0.01, "Amount must be greater than 0"),
   description: z.string().min(1, "Description is required"),
@@ -173,7 +172,6 @@ const Transactions = () => {
     
     try {
       if (isEditing && currentTransaction) {
-        // Update transaction
         const { error } = await supabase
           .from('transactions')
           .update({
@@ -194,7 +192,6 @@ const Transactions = () => {
           description: "Transaction updated successfully",
         });
       } else {
-        // Create new transaction
         const { error } = await supabase
           .from('transactions')
           .insert({
@@ -215,7 +212,6 @@ const Transactions = () => {
         });
       }
       
-      // Reset form and close dialog
       form.reset();
       setIsDialogOpen(false);
       setIsEditing(false);
@@ -290,11 +286,9 @@ const Transactions = () => {
   };
 
   const filteredTransactions = transactions.filter(transaction => {
-    // Apply search filter
     const matchesSearch = transaction.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
                           getCategoryName(transaction.category_id).toLowerCase().includes(searchQuery.toLowerCase());
     
-    // Apply type filter
     const matchesFilter = activeFilter === "all" || 
                           (activeFilter === "income" && transaction.type === "income") ||
                           (activeFilter === "expense" && transaction.type === "expense");
