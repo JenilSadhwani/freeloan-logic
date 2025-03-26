@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import {
   Wallet,
@@ -725,7 +724,7 @@ const Budget = () => {
                                 <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                               ))}
                             </Pie>
-                            <Tooltip formatter={(value) => [formatCurrency(value), 'Amount']} />
+                            <Tooltip formatter={(value) => [formatCurrency(Number(value)), 'Amount']} />
                           </PieChart>
                         </ResponsiveContainer>
                       ) : (
@@ -753,7 +752,7 @@ const Budget = () => {
                           <CartesianGrid strokeDasharray="3 3" />
                           <XAxis dataKey="name" />
                           <YAxis />
-                          <Tooltip formatter={(value) => [formatCurrency(value), undefined]} />
+                          <Tooltip formatter={(value) => [formatCurrency(Number(value)), undefined]} />
                           <Legend />
                           <Bar dataKey="planned" name="Planned" fill="#8884d8" />
                           <Bar dataKey="actual" name="Actual" fill="#82ca9d" />
