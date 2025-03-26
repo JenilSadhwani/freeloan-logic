@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback } from "react";
 import { Search, Filter, ArrowDown, ArrowUp, RefreshCw, Star, Plus, Clock, TrendingUp, TrendingDown } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -161,9 +162,9 @@ const Markets = () => {
         if (activeStock) {
           setStockDetails({
             ...activeStock,
-            stats: mockMarketData.AAPL.stats
+            stats: mockMarketData.RELIANCE.stats
           });
-          setChartData(mockMarketData.AAPL.chartData);
+          setChartData(mockMarketData.RELIANCE.chartData);
         }
       }
     } finally {
@@ -260,9 +261,9 @@ const Markets = () => {
       if (activeStock) {
         setStockDetails({
           ...activeStock,
-          stats: mockMarketData.AAPL.stats
+          stats: mockMarketData.RELIANCE.stats
         });
-        setChartData(mockMarketData.AAPL.chartData);
+        setChartData(mockMarketData.RELIANCE.chartData);
       }
     } finally {
       setIsChartLoading(false);
@@ -311,7 +312,7 @@ const Markets = () => {
         toast.error("Failed to load historical data");
         
         // Fall back to mock data
-        setChartData(mockMarketData.AAPL.chartData);
+        setChartData(mockMarketData.RELIANCE.chartData);
       } finally {
         setIsChartLoading(false);
       }
@@ -823,7 +824,8 @@ const Markets = () => {
                                   {period.label}
                                 </Button>
                               ))}
-                                                      </div>
+                            </div>
+                          </div>
                           <div className="h-[350px]">
                             <ResponsiveContainer width="100%" height="100%">
                               <AreaChart data={chartData}>
