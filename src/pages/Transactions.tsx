@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Plus, Filter, Search, Trash2, Edit, ArrowUpRight, ArrowDownLeft } from "lucide-react";
@@ -631,7 +630,7 @@ const Transactions = () => {
                         ) : (
                           <ArrowDownLeft className="h-4 w-4 mr-1" />
                         )}
-                        ${transaction.amount.toFixed(2)}
+                        {formatCurrency(transaction.amount)}
                       </div>
                     </TableCell>
                     <TableCell className="text-right">

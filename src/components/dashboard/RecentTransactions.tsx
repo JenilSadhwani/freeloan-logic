@@ -6,6 +6,7 @@ import {
   CardTitle,
   CardContent,
 } from "@/components/ui/card";
+import { formatCurrency } from "@/lib/utils";
 
 interface Transaction {
   id: string;
@@ -36,7 +37,7 @@ const RecentTransactions = ({ transactions }: RecentTransactionsProps) => {
                 </div>
               </div>
               <div className={`font-medium ${t.type === 'income' ? 'text-green-600' : 'text-red-600'}`}>
-                {t.type === 'income' ? '+' : '-'}${t.amount.toFixed(2)}
+                {t.type === 'income' ? '+' : '-'}{formatCurrency(t.amount)}
               </div>
             </div>
           ))}

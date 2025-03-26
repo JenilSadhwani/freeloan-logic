@@ -8,6 +8,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { RefreshCw } from "lucide-react";
+import { formatCurrency } from "@/lib/utils";
 
 interface SummaryCardsProps {
   currentBalance: number;
@@ -38,7 +39,7 @@ const SummaryCards = ({
         <CardHeader>
           <CardDescription>Current Balance</CardDescription>
           <CardTitle className="text-2xl font-bold flex items-center">
-            ₹{currentBalance.toLocaleString('en-IN')}
+            {formatCurrency(currentBalance)}
             {!autoUpdateEnabled && (
               <Button 
                 variant="ghost" 
@@ -63,7 +64,7 @@ const SummaryCards = ({
         <CardHeader>
           <CardDescription>Total Income</CardDescription>
           <CardTitle className="text-2xl font-bold flex items-center">
-            ₹{totalIncome.toLocaleString('en-IN')}
+            {formatCurrency(totalIncome)}
             <span className="ml-2 text-green-500 flex items-center text-sm font-normal">
               <ArrowUpRight className="h-4 w-4" />
               {/* example stat */}
@@ -77,7 +78,7 @@ const SummaryCards = ({
         <CardHeader>
           <CardDescription>Total Expenses</CardDescription>
           <CardTitle className="text-2xl font-bold flex items-center">
-            ₹{totalExpenses.toLocaleString('en-IN')}
+            {formatCurrency(totalExpenses)}
             <span className="ml-2 text-red-500 flex items-center text-sm font-normal">
               <ArrowUpRight className="h-4 w-4" />
               8.2%
@@ -90,7 +91,7 @@ const SummaryCards = ({
         <CardHeader>
           <CardDescription>Net Profit</CardDescription>
           <CardTitle className="text-2xl font-bold flex items-center">
-            ₹{netProfit.toLocaleString('en-IN')}
+            {formatCurrency(netProfit)}
             <span className={`ml-2 flex items-center text-sm font-normal ${isProfit ? 'text-green-500' : 'text-red-500'}`}>
               {isProfit ? <ArrowUpRight className="h-4 w-4" /> : <ArrowDownRight className="h-4 w-4" />}
               {profitPercentage}%
